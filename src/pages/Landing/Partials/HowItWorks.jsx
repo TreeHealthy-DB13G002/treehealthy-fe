@@ -30,7 +30,6 @@ export default function HowItWorks() {
           <h2 className="text-3xl font-extrabold text-brand-secondary sm:text-4xl tracking-tight">How TreeHealthy Guides You</h2>
         </div>
 
-        {/* Layout Alur Kartu Step Horizontal */}
         <div className="grid md:grid-cols-4 gap-6 relative">
           {steps.map((s, i) => (
             <div key={i} className="relative p-6 rounded-2xl bg-gray-50/50 border border-gray-100 flex flex-col justify-between h-full">

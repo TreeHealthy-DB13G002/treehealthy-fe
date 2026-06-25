@@ -1,5 +1,12 @@
+import AuthPage from "./Partials/AuthPage";
+import LoginForm from "./Partials/LoginForm";
+
 const Login = () => {
-  return <h1>Login Page</h1>;
+  return (
+    <AuthPage>
+      <LoginForm />
+    </AuthPage>
+  );
 };
 
 export default Login;

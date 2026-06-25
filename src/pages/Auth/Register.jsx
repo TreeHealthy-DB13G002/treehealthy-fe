@@ -1,5 +1,12 @@
+import AuthPage from "./Partials/AuthPage";
+import RegisterForm from "./Partials/RegisterForm";
+
 const Register = () => {
-  return <h1>Register Page</h1>;
+  return (
+    <AuthPage>
+      <RegisterForm />
+    </AuthPage>
+  );
 };
 
 export default Register;

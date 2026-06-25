@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { Menu, X } from "lucide-react";
-import logoApp from "../../assets/images/treehealthy-logo.png";
+import logoApp from "@/assets/icons/treehealthy-logo.png";
 
 const navigation = [
   { name: "About", href: "#about" },
