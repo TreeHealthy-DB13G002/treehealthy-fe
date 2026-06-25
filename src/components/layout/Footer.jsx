@@ -1,4 +1,4 @@
-import logoApp from "../../assets/images/treehealthy-logo.png";
+import logoApp from "@/assets/icons/treehealthy-logo.png";
 
 export default function Footer() {
   return (
