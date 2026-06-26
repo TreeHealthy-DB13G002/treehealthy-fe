@@ -11,13 +11,14 @@ import ForgotPassword from "@/pages/Auth/ForgotPassword";
 import ResetPassword from "@/pages/Auth/ResetPassword";
 
 import Dashboard from "@/pages/Dashboard";
-import Assessment from "@/pages/Assessment";
+import Assessment from "@/pages/Assessment/Assessment";
 import Settings from "@/pages/Settings";
 
 import Analytics from "@/pages/History/Analytics";
 import JourneyLog from "@/pages/History/JourneyLog";
 
 import NotFound from "@/pages/NotFound";
+import AssessmentLayout from "@/layouts/AssessmentLayout";
 
 const AppRoutes = () => {
   return (
@@ -34,9 +35,12 @@ const AppRoutes = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
+        <Route element={<AssessmentLayout />}>
+          <Route path="/assessment" element={<Assessment />} />
+        </Route>
+
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/assessment" element={<Assessment />} />
 
           <Route path="/history/analytics" element={<Analytics />} />
           <Route path="/history/journey-log" element={<JourneyLog />} />
