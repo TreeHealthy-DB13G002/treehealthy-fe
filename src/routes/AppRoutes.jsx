@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingLayout from "../layouts/LandingLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import MainLayout from "../layouts/MainLayout";
+import AssessmentLayout from "@/layouts/AssessmentLayout";
 
 import Landing from "@/pages/Landing";
 import Login from "../pages/Auth/Login";
@@ -10,15 +11,14 @@ import Register from "../pages/Auth/Register";
 import ForgotPassword from "@/pages/Auth/ForgotPassword";
 import ResetPassword from "@/pages/Auth/ResetPassword";
 
-import Dashboard from "@/pages/Dashboard";
 import Assessment from "@/pages/Assessment/Assessment";
-import Settings from "@/pages/Settings";
 
+import Dashboard from "@/pages/Dashboard/Dashboard";
 import Analytics from "@/pages/History/Analytics";
 import JourneyLog from "@/pages/History/JourneyLog";
+import Settings from "@/pages/Settings";
 
 import NotFound from "@/pages/NotFound";
-import AssessmentLayout from "@/layouts/AssessmentLayout";
 
 const AppRoutes = () => {
   return (
