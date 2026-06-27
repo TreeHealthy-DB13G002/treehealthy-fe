@@ -11,8 +11,8 @@ const menus = [
     name: "History",
     icon: FiBarChart2,
     children: [
-      { name: "Health Analytics", icon: FiActivity, path: "/analytics" },
-      { name: "Journey Log", icon: FiBookOpen, path: "/journey-log" },
+      { name: "Health Analytics", icon: FiActivity, path: "/history/analytics" },
+      { name: "Journey Log", icon: FiBookOpen, path: "/history/journey-log" },
     ],
   },
   { name: "Settings", icon: FiSettings, path: "/settings" },

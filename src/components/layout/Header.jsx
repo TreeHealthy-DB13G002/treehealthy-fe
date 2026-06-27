@@ -34,7 +34,6 @@ const Header = ({ toggleSidebar }) => {
         <button onClick={toggleSidebar} className="rounded-lg p-2 transition hover:bg-slate-100 active:scale-95 text-slate-600">
           <FiMenu size={20} />
         </button>
-        <h2 className="text-lg md:text-xl font-bold text-slate-800">Dashboard</h2>
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
