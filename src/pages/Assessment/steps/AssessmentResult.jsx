@@ -132,7 +132,7 @@ const AssessmentResult = () => {
 
         <div className="mt-8">
           <button
-            onClick={() => navigate("/action-plan")}
+            onClick={() => navigate("/dashboard")}
             className="w-full bg-brand-primary hover:bg-brand-secondary text-white font-bold h-12 rounded-xl shadow-xs transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer flex items-center justify-center"
           >
             Buatkan Program Sehat
