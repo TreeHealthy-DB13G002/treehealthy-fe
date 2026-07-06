@@ -162,11 +162,11 @@ const PersonalProfile = ({ onContinue, savedData }) => {
                   <SelectValue placeholder="Pilih tingkat aktivitas" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="working">Bekerja Duduk (Kantoran/Sering Diam)</SelectItem>
-                  <SelectItem value="freelance">Bekerja Aktif (Banyak Bergerak/Mobilisasi)</SelectItem>
+                  <SelectItem value="freelance">Bekerja</SelectItem>
+                  <SelectItem value="not_working">Tidak Bekerja</SelectItem>
+                  <SelectItem value="working">Pekerja Lepas</SelectItem>
                   <SelectItem value="student">Pelajar / Mahasiswa</SelectItem>
                   <SelectItem value="household">Ibu Rumah Tangga</SelectItem>
-                  <SelectItem value="not_working">Sedang Tidak Bekerja</SelectItem>
                   <SelectItem value="retired">Lansia / Pensiunan</SelectItem>
                 </SelectContent>
               </Select>
@@ -182,9 +182,6 @@ const PersonalProfile = ({ onContinue, savedData }) => {
                 { id: "hypertension", label: "Hipertensi (Darah Tinggi)" },
                 { id: "diabetes", label: "Diabetes (Kencing Manis)" },
                 { id: "heart_disease", label: "Penyakit Jantung Kronis" },
-                { id: "stroke", label: "Stroke / Penyumbatan" },
-                { id: "cancer", label: "Kanker / Tumor Ganas" },
-                { id: "asthma_copd", label: "Asma / Penyakit Paru Obstruktif" },
               ].map((item) => {
                 const currentHistories = watch("familyHistory") || [];
                 const isChecked = currentHistories.includes(item.id);
