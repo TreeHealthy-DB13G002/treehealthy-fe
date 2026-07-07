@@ -27,9 +27,6 @@ const LoginForm = () => {
             <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-brand-secondary">
               Password
             </Label>
-            <Link to="/forgot-password" className="text-xs font-bold text-brand-primary hover:text-brand-secondary transition-colors">
-              Forgot password?
-            </Link>
           </div>
           <PasswordInput id="password" placeholder="Enter your password" className="h-11 rounded-xl border-gray-200 focus-visible:ring-brand-primary" />
         </div>
