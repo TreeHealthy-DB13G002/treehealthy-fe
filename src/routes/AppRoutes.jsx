@@ -8,8 +8,6 @@ import AssessmentLayout from "@/layouts/AssessmentLayout";
 import Landing from "@/pages/Landing";
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
-import ForgotPassword from "@/pages/Auth/ForgotPassword";
-import ResetPassword from "@/pages/Auth/ResetPassword";
 
 import Assessment from "@/pages/Assessment/Assessment";
 
@@ -31,8 +29,6 @@ const AppRoutes = () => {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
         <Route element={<AssessmentLayout />}>
