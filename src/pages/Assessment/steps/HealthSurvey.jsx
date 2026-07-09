@@ -20,7 +20,6 @@ const HealthSurvey = ({ questionIndex, totalQuestions, currentQuestion, onNext, 
 
   const handleNext = () => {
     if (!selected) return;
-
     onNext(currentQuestion.id, selected);
   };
 
@@ -30,7 +29,7 @@ const HealthSurvey = ({ questionIndex, totalQuestions, currentQuestion, onNext, 
     <div className="space-y-6">
       <ProgressText current={questionIndex + 1} total={totalQuestions} />
 
-      <QuestionCard title={currentQuestion.title} description={currentQuestion.description}>
+      <QuestionCard title={currentQuestion.question_text} hint={currentQuestion.category}>
         <div className="flex flex-col h-full justify-between space-y-6">
           <div className="flex-1">
             <QuestionOptions options={currentQuestion.options} value={selected} onChange={handleSelect} />
