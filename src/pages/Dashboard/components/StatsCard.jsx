@@ -1,7 +1,9 @@
 import { FiActivity, FiZap, FiCalendar } from "react-icons/fi";
 
 const StatsCard = ({ variant, value, label, subtext, progress, className = "", onClick, isClickable = false }) => {
-  const numericValue = parseFloat(value) || 0;
+  // 🌟 AMAN DARI DATA KOSONG: Cek jika nilainya bernilai kosong atau tanda minus
+  const isValueEmpty = value === "--" || value === undefined || value === null;
+  const numericValue = isValueEmpty ? 0 : parseFloat(value) || 0;
 
   const config = {
     streak: {
@@ -11,8 +13,9 @@ const StatsCard = ({ variant, value, label, subtext, progress, className = "", o
     },
     risk: {
       icon: FiActivity,
-      iconColor: numericValue > 60 ? "text-red-600" : numericValue >= 30 ? "text-amber-600" : "text-green-600",
-      iconBg: numericValue > 60 ? "bg-red-100/60" : numericValue >= 30 ? "bg-amber-100/60" : "bg-green-100/60",
+      // 🌟 KOREKSI: Jika data kosong, beri warna netral abu-abu (slate) biar serasi dengan card-nya
+      iconColor: isValueEmpty ? "text-slate-400" : numericValue > 60 ? "text-red-600" : numericValue >= 30 ? "text-amber-600" : "text-green-600",
+      iconBg: isValueEmpty ? "bg-slate-100" : numericValue > 60 ? "bg-red-100/60" : numericValue >= 30 ? "bg-amber-100/60" : "bg-green-100/60",
     },
     plan: {
       icon: FiCalendar,

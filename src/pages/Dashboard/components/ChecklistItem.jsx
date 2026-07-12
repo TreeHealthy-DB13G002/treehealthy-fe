@@ -1,39 +1,32 @@
-import { FiLock, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
+import { FiAlertCircle, FiCheckCircle } from "react-icons/fi";
 
+// 🌟 HAPUS VARIABEL WARNA LOCKED
 const colors = {
   completed: "bg-[#e2f9e9] border-[#bbf3cd] text-[#14532d]",
-  locked: "bg-[#f1f1f1] border-[#e2e2e2] text-[#475569]",
   in_progress: "bg-[#e0f2fe] border-[#bae6fd] text-[#0369a1]",
   failed: "bg-[#ffeeeb] border-[#fecdd3] text-[#991b1b]",
 };
 
 const badges = {
   completed: "text-[#14532d]",
-  locked: "text-[#475569]",
   in_progress: "text-[#0369a1]",
   failed: "text-[#991b1b]",
 };
 
 const labels = {
   completed: "Done",
-  locked: "Locked",
   in_progress: "In Progress",
   failed: "Failed",
 };
 
-const ChecklistItem = ({ title, status, description, timeLockDesc, onCheck }) => {
+// 🌟 PROPERTY timeLockDesc DICABUT TOTAL DARI PARAMETER PROPS
+const ChecklistItem = ({ title, status, description, onCheck }) => {
   return (
     <div className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl sm:rounded-[28px] border p-4 sm:px-4 sm:py-2.5 transition-all duration-300 shadow-3xs ${colors[status]}`}>
       <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
         {status === "completed" && (
           <span className="text-xl shrink-0 select-none filter drop-shadow-xs mt-0.5 sm:mt-0 text-[#16a34a]">
             <FiCheckCircle size={24} />
-          </span>
-        )}
-
-        {status === "locked" && (
-          <span className="text-xl shrink-0 select-none filter drop-shadow-xs mt-0.5 sm:mt-0 text-[#64748b]">
-            <FiLock size={24} />
           </span>
         )}
 
@@ -54,13 +47,7 @@ const ChecklistItem = ({ title, status, description, timeLockDesc, onCheck }) =>
         <div className="min-w-0 text-left space-y-0.5">
           <p className={`text-sm font-bold tracking-tight break-words ${status === "completed" ? "line-through opacity-50 font-medium" : "text-slate-800"}`}>{title}</p>
 
-          {description && (
-            <p className={`text-xs font-medium leading-normal break-words sm:truncate ${status === "completed" ? "line-through opacity-40" : status === "locked" || status === "failed" ? "text-slate-500" : "text-slate-600"}`}>
-              {description}
-            </p>
-          )}
-
-          {timeLockDesc && <p className="text-xs font-medium text-slate-400/90 flex items-center gap-1 pt-0.5">{timeLockDesc}</p>}
+          {description && <p className={`text-xs font-medium leading-normal break-words sm:truncate ${status === "completed" ? "line-through opacity-40" : status === "failed" ? "text-slate-500" : "text-slate-600"}`}>{description}</p>}
         </div>
       </div>
 

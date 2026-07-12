@@ -1,20 +1,16 @@
 import { useEffect, useState } from "react";
 import DashboardContent from "./Partials/DashboardContent";
 import DashboardStats from "./Partials/DashboardStats";
+import FeedbackModal from "./components/FeedbackModal";
+import { initialStatsData } from "./data/dashboard";
 
 const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState("");
-
   const [checklistProgress, setChecklistProgress] = useState(0);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [hasAlerted, setHasAlerted] = useState(false);
 
-  const [statsData, setStatsData] = useState({
-    streakDays: 3,
-    riskScore: 34.5,
-    currentPlanDay: 6,
-    totalPlanDays: 7,
-  });
+  const [statsData, setStatsData] = useState(initialStatsData);
 
   useEffect(() => {
     const updateDate = () => {
@@ -42,20 +38,53 @@ const Dashboard = () => {
 
   useEffect(() => {
     if ((isDay7Finished || isDay8CutOff) && !hasAlerted) {
-      if (isDay7Finished) {
-        alert("🎉 Luar biasa! Seluruh program sehat 7 hari Anda telah tuntas 100% hari ini!");
-      } else if (isDay8CutOff) {
-        alert("⚠️ Batas waktu program 7 hari Anda telah selesai. Silakan isi feedback evaluasi.");
-      }
       setShowFeedbackModal(true);
       setHasAlerted(true);
     }
   }, [isDay7Finished, isDay8CutOff, hasAlerted]);
 
+  // 🌟 TRIGGER PEMBERSIHAN & PERPINDAHAN SIKLUS MINGGU BARU
+  const handleFeedbackSubmit = (userData) => {
+    console.log("Feedback siap dikirim ke database BE:", userData);
+
+    setStatsData((prev) => {
+      const nextDay = 1; // 🚨 Reset kembali ke Hari 1
+      const isOverCutOff = prev.currentPlanDay > prev.totalPlanDays;
+
+      // Hitung kelipatan minggu baru secara dinamis
+      const baseWeek = isOverCutOff ? Math.ceil(prev.currentPlanDay / 7) : Math.ceil(prev.currentPlanDay / 7) + 1;
+
+      return {
+        ...prev,
+        currentPlanDay: nextDay, // 🚨 Reset Hari ke 1
+        streakDays: prev.streakDays, // 🔥 Streak dipertahankan lanjut
+        riskScore: prev.riskScore, // 🩺 Skor risiko medis tetap aman dipertahankan
+
+        // Simulasikan pergeseran tanggal target (Maju 7 hari ke siklus berikutnya)
+        weekStartDate: "2026-06-22",
+        weekEndDate: "2026-06-28",
+
+        // 🚨 CLEAR TOTAL 3 KOLOM STATISTIK MINGGUAN KARENA MASUK MINGGU BARU
+        weeklyStats: {
+          avgCompliance: 0,
+          perfectDays: 0,
+          riskDrop: 0,
+        },
+      };
+    });
+
+    // 🚨 RESET FLAG PELINDUNG MODAL SUPAYA MINGGU DEPAN BISA MUNCUL LAGI
+    setHasAlerted(false);
+    setShowFeedbackModal(false);
+    console.log("Dashboard berhasil dibersihkan! Selamat datang di minggu berikutnya.");
+  };
+
   const calculatedWeek = currentDay === 0 ? 0 : Math.ceil(currentDay / 7);
+  const modalWeek = isDay8CutOff ? Math.max(1, calculatedWeek - 1) : calculatedWeek;
 
   return (
     <div className="space-y-6">
+      {/* Header Dashboard */}
       <div className="text-left">
         <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Dashboard</h1>
         <p className="mt-1 text-sm font-medium text-slate-500">
@@ -63,38 +92,30 @@ const Dashboard = () => {
         </p>
       </div>
 
+      {/* Komponen Statistik Utama */}
       <DashboardStats checklistProgress={checklistProgress} statsData={statsData} onOpenModal={() => setShowFeedbackModal(true)} />
 
-      <DashboardContent currentProgress={isDay8CutOff ? 0 : checklistProgress} onProgressChange={setChecklistProgress} isEvalMode={isDay8CutOff} />
+      {/* Komponen Isi Aktivitas Harian */}
+      {/* 🌟 TIP CERDAS FE: Kita oper currentPlanDay dan totalDays sebagai pemicu key re-render */}
+      <DashboardContent
+        currentProgress={isDay8CutOff ? 0 : checklistProgress}
+        onProgressChange={setChecklistProgress}
+        isEvalMode={isDay8CutOff}
+        currentPlanDay={currentDay}
+        weekStartDate={statsData.weekStartDate} // Digunakan sebagai key identity
+      />
 
-      {showFeedbackModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl text-center space-y-4 border border-slate-100">
-            <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">✓</div>
-            <h3 className="text-lg font-bold text-slate-800">Lembar Evaluasi & Feedback Program</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              {isDay8CutOff
-                ? "Siklus program 7 hari telah berakhir. Bagikan perubahan fisik yang Anda rasakan untuk generate modul resep kesehatan AI berikutnya."
-                : "Selamat atas keberhasilan Anda menuntaskan seluruh target! Bagikan cerita sehatmu di bawah ini."}
-            </p>
-            <textarea rows={3} className="w-full rounded-2xl border border-slate-200 p-3 text-xs focus:border-sky-500 focus:outline-hidden bg-slate-50" placeholder="Tuliskan pengalaman atau kendala fisik yang Anda rasakan..." />
-            <div className="flex gap-2.5 pt-2">
-              <button onClick={() => setShowFeedbackModal(false)} className="flex-1 rounded-xl bg-slate-100 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-200 transition-all cursor-pointer">
-                Kembali
-              </button>
-              <button
-                onClick={() => {
-                  alert("Feedback berhasil disimpan! AI sedang menyusun Action Plan siklus baru.");
-                  setShowFeedbackModal(false);
-                }}
-                className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition-all cursor-pointer shadow-xs"
-              >
-                Kirim Evaluasi
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Komponen Feedback Modal Terpisah */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        isDay8CutOff={isDay8CutOff}
+        onSubmitSuccess={handleFeedbackSubmit}
+        currentWeek={modalWeek}
+        startDate={statsData.weekStartDate}
+        endDate={statsData.weekEndDate}
+        stats={statsData.weeklyStats}
+      />
     </div>
   );
 };
