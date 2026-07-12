@@ -1,13 +1,18 @@
+import treeHealthy from "@/assets/images/tree-healthy.png";
+import treeWilted from "@/assets/images/tree-wilted.png";
+
 const HealthCharacterCard = ({ currentProgress = 0 }) => {
   const displayPercentage = Math.round(currentProgress);
-  const isHealthy = displayPercentage > 50;
+
+  // 🌟 ADJUSTMENT LOGIC: Jika progress 0 karena onboarding / baru bangun tidur subuh, pohon tetep seger
+  const isHealthy = displayPercentage > 50 || displayPercentage === 0;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-xs flex flex-col justify-between h-auto md:h-full md:min-h-[380px]">
       <div className="flex flex-col items-center justify-center py-3 sm:py-4 flex-1">
         <div className="relative group">
           <img
-            src={isHealthy ? "/images/tree-healthy.png" : "/images/tree-wilted.png"}
+            src={isHealthy ? treeHealthy : treeWilted}
             alt="Status Pohon Kesehatan"
             className={`h-36 w-36 sm:h-44 sm:w-44 object-contain transition-transform duration-500 group-hover:scale-105 
               ${!isHealthy ? "animate-pulse" : ""}
@@ -15,12 +20,12 @@ const HealthCharacterCard = ({ currentProgress = 0 }) => {
           />
         </div>
 
-        <p className={`mt-3 sm:mt-4 font-black text-sm tracking-wide ${isHealthy ? "text-emerald-600" : "text-amber-600"}`}>{isHealthy ? "🌳 Pohon Sehat & Subur" : "🍂 Pohon Layu (Butuh Nutrisi Sehat)"}</p>
+        <p className={`mt-3 sm:mt-4 font-black text-sm tracking-wide ${isHealthy ? "text-emerald-600" : "text-amber-600"}`}>{isHealthy ? "🌳 Pohon Sehat & Subur" : "🍂 Pohon Layu"}</p>
       </div>
 
       <div className="space-y-2 border-t border-slate-100 pt-3">
         <div className="flex items-center justify-between text-xs font-bold text-slate-500">
-          <span>Level {isHealthy ? "3 (Maju)" : "1 (Adaptasi)"}</span>
+          <span>Progress Hari ini</span>
           <span className={isHealthy ? "text-emerald-600" : "text-amber-500"}>{displayPercentage}%</span>
         </div>
 
@@ -33,7 +38,7 @@ const HealthCharacterCard = ({ currentProgress = 0 }) => {
           />
         </div>
 
-        <p className="text-center text-xs font-semibold text-slate-400/90 italic">{isHealthy ? "Pertahankan hidrasi dan aktivitas fisik untuk berevolusi!" : "Selesaikan 1 misi lagi agar pohon kembali segar!"}</p>
+        <p className="text-center text-xs font-semibold text-slate-400/90 italic">{isHealthy ? "Pertahankan hidrasi dan aktivitas fisik untuk berevolusi!" : "Selesaikan misi lagi agar pohon kembali segar!"}</p>
       </div>
     </div>
   );
