@@ -3,15 +3,22 @@ export const weeklyMasterLogs = [
     id: "w1",
     cycle: "Minggu ke-1",
     dateRange: "15 Juni - 21 Juni 2026",
-    ptmRisk: "Tinggi", // 🔴 Wajib 8 Task per hari
+    ptmRisk: "Tinggi",
     compliance: "80% (45 dari 56 tugas selesai)",
     status: "Selesai",
+    userReflection:
+      "Minggu pertama agak berat di konsistensi jam tidur karena lembur kerja, tapi pola minum air 2 liter sudah mulai terbiasa. Badan terasa lebih segar di siang hari, meskipun leher bagian belakang kadang masih terasa agak kaku kalau kelelahan.",
+    aiBreakdown: {
+      critical: "Kesehatan metabolik & fisik: Anda melaporkan leher sering terasa kaku di malam hari (Indikasi tekanan darah tidak stabil akibat kelelahan).",
+      warning: "Gaya hidup & kebiasaan: Konsumsi gorengan/makanan instan masih tinggi (hampir setiap hari), batasi untuk menekan risiko kolesterol.",
+      good: "Kesejahteraan mental & sosial: Sangat bagus! Anda konsisten olahraga 30 menit sebanyak 3x seminggu (Tingkat Kepatuhan Misi 85%).",
+    },
   },
   {
     id: "w2",
     cycle: "Minggu ke-2",
     dateRange: "22 Juni - 28 Juni 2026",
-    ptmRisk: "Sedang", // 🟡 Wajib 8 Task per hari
+    ptmRisk: "Sedang",
     compliance: "50% (28 dari 56 tugas selesai)",
     status: "Butuh Evaluasi",
   },
@@ -19,7 +26,7 @@ export const weeklyMasterLogs = [
     id: "w3",
     cycle: "Minggu ke-3",
     dateRange: "29 Juni - 05 Juli 2026",
-    ptmRisk: "Rendah", // 🟢 Otomatis 7 Task per hari
+    ptmRisk: "Rendah",
     compliance: "93% (46 dari 49 tugas selesai)",
     status: "Selesai",
   },
@@ -27,7 +34,7 @@ export const weeklyMasterLogs = [
     id: "w4",
     cycle: "Minggu ke-4",
     dateRange: "06 Juli - 12 Juli 2026",
-    ptmRisk: "Tinggi", // 🔴 Wajib 8 Task per hari
+    ptmRisk: "Tinggi",
     compliance: "57% (32 dari 56 tugas selesai)",
     status: "Butuh Evaluasi",
   },
@@ -35,7 +42,7 @@ export const weeklyMasterLogs = [
     id: "w5",
     cycle: "Minggu ke-5",
     dateRange: "13 Juli - 19 Juli 2026",
-    ptmRisk: "Sedang", // 🟡 Wajib 8 Task per hari
+    ptmRisk: "Sedang",
     compliance: "83% (47 dari 56 tugas selesai)",
     status: "Selesai",
   },
@@ -43,7 +50,7 @@ export const weeklyMasterLogs = [
     id: "w6",
     cycle: "Minggu ke-6",
     dateRange: "20 Juli - 26 Juli 2026",
-    ptmRisk: "Rendah", // 🟢 Otomatis 7 Task per hari
+    ptmRisk: "Rendah",
     compliance: "87% (43 dari 49 tugas selesai)",
     status: "Selesai",
   },

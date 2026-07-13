@@ -17,7 +17,7 @@ const AssessmentResult = () => {
   const getRiskDetails = (score) => {
     if (score >= 70) {
       return {
-        text: "High Risk",
+        text: "Risiko Tinggi",
         textColor: "text-red-500",
         strokeColor: "stroke-red-500",
         badgeBg: "bg-red-50",
@@ -26,7 +26,7 @@ const AssessmentResult = () => {
       };
     } else if (score >= 40) {
       return {
-        text: "Moderate Risk",
+        text: "Risiko Sedang",
         textColor: "text-orange-500",
         strokeColor: "stroke-orange-500",
         badgeBg: "bg-orange-50",
@@ -35,7 +35,7 @@ const AssessmentResult = () => {
       };
     } else {
       return {
-        text: "Low Risk",
+        text: "Risiko Rendah",
         textColor: "text-brand-primary",
         strokeColor: "stroke-brand-primary",
         badgeBg: "bg-blue-50",

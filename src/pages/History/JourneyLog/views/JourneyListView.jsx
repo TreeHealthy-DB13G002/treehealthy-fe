@@ -5,6 +5,10 @@ import JourneyStats from "../components/JourneyStats";
 import StatusBadge from "../components/StatusBadge";
 import { weeklyMasterLogs } from "../data/journeyLogsData";
 
+// 🌟 IMPORT KEDUA MODAL (Hasil & Formulir Pengisian)
+import FeedbackModal from "@/pages/Dashboard/components/FeedbackModal";
+import FeedbackResultModal from "../components/FeedbackResultModal";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -12,6 +16,15 @@ import { Button } from "@/components/ui/button";
 export default function JourneyListView({ onWeekSelect }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // ─── 🌟 STATE KONTROL ALUR MODAL ───
+  // State untuk melihat HASIL EVALUASI (Siklus Selesai)
+  const [selectedEvalLog, setSelectedEvalLog] = useState(null);
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+
+  // State untuk MENGISI EVALUASI BARU (Siklus Butuh Evaluasi)
+  const [selectedFillLog, setSelectedFillLog] = useState(null);
+  const [isFillModalOpen, setIsFillModalOpen] = useState(false);
 
   const safeLogs = weeklyMasterLogs || [];
   const hasData = safeLogs.length > 0;
@@ -21,9 +34,18 @@ export default function JourneyListView({ onWeekSelect }) {
   const currentItems = safeLogs.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(safeLogs.length / itemsPerPage);
 
+  // Fungsi callback sukses setelah user berhasil mengisi formulir evaluasi
+  const handleFillSubmitSuccess = (userData) => {
+    console.log("Evaluasi mingguan berhasil disubmit dari Journey Log:", userData);
+
+    // Skenario integrasi BE nanti: di sini lu tembak API POST, lalu refresh data/state lokal
+    setIsFillModalOpen(false);
+    setSelectedFillLog(null);
+  };
+
   return (
     <div className="space-y-6 text-left">
-      <JourneyHeader title="Journey Log" subtitle="Day-by-day record of your health task execution" />
+      <JourneyHeader title="Log Riwayat Program" subtitle="Catatan harian dari pelaksanaan aktivitas dan misi kesehatan Anda" />
       <JourneyStats data={safeLogs} isDetailView={false} />
 
       <div className="card-base border border-border bg-brand-white">
@@ -54,18 +76,27 @@ export default function JourneyListView({ onWeekSelect }) {
                       <StatusBadge status={log.status} type="weekly" />
                     </TableCell>
                     <TableCell>
-                      <ActionDropdown status={log.status} onDetail={() => onWeekSelect({ id: log.id, cycle: log.cycle, risk: log.ptmRisk })} />
+                      {/* 🌟 MENYAMBUNGKAN EMIT KLIK KE CONTROLLER */}
+                      <ActionDropdown
+                        status={log.status}
+                        onDetail={() => onWeekSelect({ id: log.id, cycle: log.cycle, risk: log.ptmRisk })}
+                        onOpenResult={() => {
+                          setSelectedEvalLog(log);
+                          setIsResultModalOpen(true);
+                        }}
+                        onOpenFill={() => {
+                          setSelectedFillLog(log);
+                          setIsFillModalOpen(true);
+                        }}
+                      />
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
-                /* 🟢 DESKTOP EMPTY STATE CONDITION */
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-14 text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <FiInbox className="h-8 w-8 text-slate-300" />
                       <p className="text-sm font-bold text-slate-400">Belum ada rekaman siklus mingguan.</p>
-                      <p className="text-2xs text-slate-400/80 font-medium">Data evaluasi kesehatan berkala Anda akan muncul di sini.</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -81,7 +112,18 @@ export default function JourneyListView({ onWeekSelect }) {
               <div key={log.id} className="p-4 rounded-xl border border-border bg-brand-white shadow-3xs space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-extrabold text-brand-secondary">{log.cycle}</span>
-                  <ActionDropdown status={log.status} onDetail={() => onWeekSelect({ id: log.id, cycle: log.cycle, risk: log.ptmRisk })} />
+                  <ActionDropdown
+                    status={log.status}
+                    onDetail={() => onWeekSelect({ id: log.id, cycle: log.cycle, risk: log.ptmRisk })}
+                    onOpenResult={() => {
+                      setSelectedEvalLog(log);
+                      setIsResultModalOpen(true);
+                    }}
+                    onOpenFill={() => {
+                      setSelectedFillLog(log);
+                      setIsFillModalOpen(true);
+                    }}
+                  />
                 </div>
                 <p className="text-xs font-semibold text-slate-400">{log.dateRange}</p>
                 <div className="flex justify-between items-center pt-2 border-t border-slate-100">
@@ -96,19 +138,15 @@ export default function JourneyListView({ onWeekSelect }) {
               </div>
             ))
           ) : (
-            /* 🟢 MOBILE EMPTY STATE CONDITION */
-            <div className="text-center py-10 px-4 rounded-xl border border-dashed border-slate-200 text-slate-400 bg-slate-50/40">
-              <FiInbox className="h-7 w-7 text-slate-300 mx-auto mb-2" />
-              <p className="text-xs font-bold text-slate-400">Belum ada rekaman mingguan.</p>
-            </div>
+            <div className="text-center py-10 px-4 text-slate-400">Belum ada rekaman.</div>
           )}
         </div>
 
-        {/* PAGINATION PANEL (Hanya muncul jika datanya ada, bro!) */}
+        {/* PAGINATION PANEL (🌟 BALIK FULL UTUH SEPERTI SEMULA, BRO) */}
         {hasData && (
           <div className="flex items-center justify-between pt-4 border-t border-border mt-5">
             <p className="text-xs font-semibold text-slate-400">
-              Showing <span>{indexOfFirstItem + 1}</span> to <span>{Math.min(indexOfLastItem, safeLogs.length)}</span> of <span>{safeLogs.length}</span> logs
+              Menampilkan <span>{indexOfFirstItem + 1}</span> sampai <span>{Math.min(indexOfLastItem, safeLogs.length)}</span> dari <span>{safeLogs.length}</span> catatan
             </p>
             <div className="flex gap-2">
               <Button
@@ -133,11 +171,43 @@ export default function JourneyListView({ onWeekSelect }) {
           </div>
         )}
       </div>
+
+      {/* ─── 🌟 MODAL JALUR 1: LIHAT HASIL EVALUASI (SIKLUS SELESAI) ─── */}
+      <FeedbackResultModal
+        isOpen={isResultModalOpen}
+        onClose={() => {
+          setIsResultModalOpen(false);
+          setSelectedEvalLog(null);
+        }}
+        logData={selectedEvalLog}
+      />
+
+      {/* ─── 🌟 MODAL JALUR 2: ISI FORM EVALUASI BARU (BUTUH EVALUASI) ─── */}
+      {isFillModalOpen && selectedFillLog && (
+        <FeedbackModal
+          isOpen={isFillModalOpen}
+          onClose={() => {
+            setIsFillModalOpen(false);
+            setSelectedFillLog(null);
+          }}
+          isDay8CutOff={true}
+          onSubmitSuccess={handleFillSubmitSuccess}
+          currentWeek={parseInt(selectedFillLog.cycle.replace(/\D/g, "")) || 1}
+          startDate={selectedFillLog.dateRange.split(" - ")[0]}
+          endDate={selectedFillLog.dateRange.split(" - ")[1]}
+          stats={{
+            avgCompliance: parseInt(selectedFillLog.compliance) || 0,
+            perfectDays: 0,
+            riskDrop: 0,
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function ActionDropdown({ status, onDetail }) {
+// ─── 🌟 UPGRADE DROPDOWN AKSI AGAR MENAMPUNG KEDUA CONDITIONAL EVENT ───
+function ActionDropdown({ status, onDetail, onOpenResult, onOpenFill }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -149,14 +219,18 @@ function ActionDropdown({ status, onDetail }) {
         <DropdownMenuItem onClick={onDetail} className="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer rounded-lg px-3 py-2 focus:bg-brand-bg focus:text-brand-primary">
           <FiEye size={14} /> Lihat Detail
         </DropdownMenuItem>
+
+        {/* JALUR HANYA UNTUK STATUS SELESAI */}
         {status === "Selesai" && (
-          <DropdownMenuItem className="flex items-center gap-2 text-xs font-bold text-brand-success cursor-pointer rounded-lg px-3 py-2 focus:bg-emerald-50 focus:text-brand-success">
-            <FiCheckCircle size={14} /> Hasil Eval
+          <DropdownMenuItem onClick={onOpenResult} className="flex items-center gap-2 text-xs font-bold text-brand-success cursor-pointer rounded-lg px-3 py-2 focus:bg-emerald-50 focus:text-brand-success">
+            <FiCheckCircle size={14} /> Hasil Evaluasi
           </DropdownMenuItem>
         )}
+
+        {/* JALUR HANYA UNTUK STATUS BUTUH EVALUASI */}
         {status === "Butuh Evaluasi" && (
-          <DropdownMenuItem className="flex items-center gap-2 text-xs font-bold text-[#d97706] cursor-pointer rounded-lg px-3 py-2 focus:bg-amber-50 focus:text-[#d97706]">
-            <FiAlertCircle size={14} /> Isi Eval
+          <DropdownMenuItem onClick={onOpenFill} className="flex items-center gap-2 text-xs font-bold text-[#d97706] cursor-pointer rounded-lg px-3 py-2 focus:bg-amber-50 focus:text-[#d97706]">
+            <FiAlertCircle size={14} /> Isi Evaluasi
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

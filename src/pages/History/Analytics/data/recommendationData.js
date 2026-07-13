@@ -1,26 +1,26 @@
 export const recommendationData = [
   {
-    week: "Week 1",
+    week: "Minggu 1",
     compliance: 78,
   },
   {
-    week: "Week 2",
+    week: "Minggu 2",
     compliance: 82,
   },
   {
-    week: "Week 3",
+    week: "Minggu 3",
     compliance: 74,
   },
   {
-    week: "Week 4",
+    week: "Minggu 4",
     compliance: 88,
   },
   {
-    week: "Week 5",
+    week: "Minggu 5",
     compliance: 91,
   },
   {
-    week: "Week 6",
+    week: "Minggu 6",
     compliance: 96,
   },
 ];
