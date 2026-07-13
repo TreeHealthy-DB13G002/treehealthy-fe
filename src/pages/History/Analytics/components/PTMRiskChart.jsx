@@ -1,8 +1,9 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ptmRiskData } from "../data/ptmRiskData";
 
-export default function PTMRiskChart({ limit }) {
-  const filteredData = ptmRiskData.slice(-limit);
+export default function PTMRiskChart({ filteredData }) {
+  // Ambil baseline (data terlama) dan current (data terbaru) secara dinamis
+  const baselineScore = filteredData.length > 0 ? filteredData[0].score : 0;
+  const currentScore = filteredData.length > 0 ? filteredData[filteredData.length - 1].score : 0;
 
   return (
     <div className="space-y-4">
@@ -17,13 +18,11 @@ export default function PTMRiskChart({ limit }) {
             </defs>
 
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-
             <XAxis dataKey="week" tick={{ fill: "#64748b", fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
-
             <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickFormatter={(val) => `${val}%`} tick={{ fill: "#64748b", fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} />
 
             <Tooltip
-              formatter={(value) => [`${value}%`, "PTM Risk"]}
+              formatter={(value) => [`${value}%`, "Risiko PTM"]}
               contentStyle={{
                 background: "#ffffff",
                 border: "1px solid #e2e8f0",
@@ -44,13 +43,13 @@ export default function PTMRiskChart({ limit }) {
       <div className="flex items-center gap-6 pt-2 text-xs font-bold pl-2">
         <div className="flex items-center gap-2 text-slate-700">
           <span className="h-3 w-3 rounded-full bg-[#0284c7]" />
-          <span>PTM Risk %</span>
+          <span>Risiko PTM %</span>
         </div>
         <div className="text-slate-500">
-          Baseline: <span className="text-slate-800 font-extrabold">34%</span>
+          Awal Siklus: <span className="text-slate-800 font-extrabold">{baselineScore}%</span>
         </div>
         <div className="text-slate-500">
-          Current: <span className="text-[#16a34a] font-extrabold">18%</span>
+          Saat Ini: <span className="text-[#16a34a] font-extrabold">{currentScore}%</span>
         </div>
       </div>
     </div>

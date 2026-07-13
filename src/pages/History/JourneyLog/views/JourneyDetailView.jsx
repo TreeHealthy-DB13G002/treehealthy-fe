@@ -2,7 +2,6 @@ import JourneyHeader from "../components/JourneyHeader";
 import JourneyStats from "../components/JourneyStats";
 import StatusBadge from "../components/StatusBadge";
 import { dailyDetailLogs } from "../data/journeyLogsData";
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }) {
@@ -10,7 +9,8 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
 
   return (
     <div className="space-y-6 text-left">
-      <JourneyHeader title={`Detail Journey Log ${weekName}`} subtitle={`Daftar pemantauan pilar kesehatan - Kategori Risiko: ${weekRisk}`} showBackButton={true} onBack={onBack} />
+      {/* 🌟 KONVERSI SUBTITLE */}
+      <JourneyHeader title={`Detail Log ${weekName}`} subtitle={`Daftar pemantauan pilar kesehatan - Kategori Risiko: ${weekRisk}`} showBackButton={true} onBack={onBack} />
       <JourneyStats data={logs} isDetailView={true} weekRisk={weekRisk} />
 
       <div className="card-base border border-border bg-brand-white">
@@ -21,7 +21,8 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
               <TableRow>
                 <TableHead className="font-bold text-brand-secondary">Tanggal</TableHead>
                 <TableHead className="font-bold text-brand-secondary">Hari</TableHead>
-                <TableHead className="font-bold text-brand-secondary">Progress Indikator Pilar ({weekRisk === "Rendah" ? "7" : "8"} Task)</TableHead>
+
+                <TableHead className="font-bold text-brand-secondary">Progres Indikator Pilar ({weekRisk === "Rendah" ? "7" : "8"} Tugas)</TableHead>
                 <TableHead className="font-bold text-brand-secondary text-center">Rasio Kepatuhan</TableHead>
                 <TableHead className="font-bold text-brand-secondary">Status Hari</TableHead>
               </TableRow>
@@ -41,6 +42,7 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
                           {log.tasks.map((isDone, idx) => (
                             <span
                               key={idx}
+                              /* 🌟 KONVERSI TOOLTIP TITLE */
                               className={`h-3 w-3 rounded-full border transition-all ${isDone ? "bg-brand-success border-emerald-300 shadow-3xs" : "bg-slate-100 border-slate-300"}`}
                               title={`Pilar ke-${idx + 1}: ${isDone ? "Terpenuhi" : "Dilewatkan"}`}
                             />
@@ -48,7 +50,7 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
                         </div>
                       </TableCell>
                       <TableCell className="text-center font-extrabold text-brand-text">
-                        {doneCount} <span className="text-slate-400 font-medium">/ {totalTasks} task</span>
+                        {doneCount} <span className="text-slate-400 font-medium">/ {totalTasks} tugas</span>
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={log.status} type="daily" />
@@ -86,8 +88,9 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
                         <span key={idx} className={`h-2.5 w-2.5 rounded-full ${isDone ? "bg-brand-success" : "bg-slate-200"}`} />
                       ))}
                     </div>
+                    {/* 🌟 KONVERSI TEKS SELESAI MOBILE */}
                     <span className="text-xs font-bold text-brand-secondary">
-                      {doneCount} / {log.tasks.length} Done
+                      {doneCount} / {log.tasks.length} Selesai
                     </span>
                   </div>
                 </div>

@@ -4,8 +4,8 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/60">
       <div className="text-left">
-        <h1 className="text-3xl font-bold text-[#0f172a] tracking-tight">Health Analytics</h1>
-        <p className="text-sm font-medium text-slate-500 mt-1">Visual analytics of your health progress over time</p>
+        <h1 className="text-3xl font-bold text-[#0f172a] tracking-tight">Analisis Kesehatan</h1>
+        <p className="text-sm font-medium text-slate-500 mt-1">Analisis visual perkembangan kesehatan Anda dari waktu ke waktu</p>
       </div>
 
       <div className="flex items-center gap-3 self-end sm:self-auto">
@@ -22,13 +22,13 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }) {
             className="w-[130px] rounded-xl border border-slate-200/80 bg-white p-1 font-semibold text-slate-700 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 duration-150"
           >
             <SelectItem value="2-weeks" className="text-xs font-bold text-slate-600 focus:bg-slate-50 focus:text-[#0369a1] cursor-pointer rounded-lg py-2 px-3 transition-colors">
-              2 Weeks
+              2 Minggu
             </SelectItem>
             <SelectItem value="4-weeks" className="text-xs font-bold text-slate-600 focus:bg-slate-50 focus:text-[#0369a1] cursor-pointer rounded-lg py-2 px-3 transition-colors">
-              4 Weeks
+              4 Minggu
             </SelectItem>
             <SelectItem value="8-weeks" className="text-xs font-bold text-slate-600 focus:bg-slate-50 focus:text-[#0369a1] cursor-pointer rounded-lg py-2 px-3 transition-colors">
-              8 Weeks
+              8 Minggu
             </SelectItem>
           </SelectContent>
         </Select>
