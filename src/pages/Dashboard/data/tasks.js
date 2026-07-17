@@ -25,7 +25,7 @@ const tasks = [
     title: "Validasi: Bebas Gorengan & Makanan Asin",
     description: "Misi Gagal: User melapor makan bakwan jam 12.30",
 
-    status: "failed",
+    status: "in_progress",
   },
   {
     id: 5,

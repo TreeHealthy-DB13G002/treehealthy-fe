@@ -8,7 +8,7 @@ const axiosClient = axios.create({
   // 💡 SESUAIKAN NANTI: Ambil base URL dari file .env proyek lu.
   // Jika pakai Vite, ganti ke: import.meta.env.VITE_API_BASE_URL
   // Fallback ke http://localhost:5000/api untuk development lokal saat ini.
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
 
   // Batas waktu tunggu server merespon (10 detik). Jika lebih, request dibatalkan otomatis.
   timeout: 10000,
@@ -28,7 +28,7 @@ axiosClient.interceptors.request.use(
   (config) => {
     // 💡 SESUAIKAN NANTI: Sesuaikan key nama penyimpanan token lu ('auth_token', 'token', dll)
     // Jika lu pakai state management seperti Zustand/Redux, ambil token dari store tersebut.
-    const token = localStorage.getItem("auth_token");
+    const token = localStorage.getItem("token");
 
     // Jika token ditemukan di storage, sisipkan ke header Authorization
     if (token) {
