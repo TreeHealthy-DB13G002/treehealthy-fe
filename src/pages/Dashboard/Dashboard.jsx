@@ -3,17 +3,30 @@ import DashboardContent from "./Partials/DashboardContent";
 import DashboardStats from "./Partials/DashboardStats";
 import FeedbackModal from "./components/FeedbackModal";
 import { initialStatsData } from "./data/dashboard";
+import { userService } from "@/services/userServices"; // 🚀 Import userService
 
 const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState("");
   const [checklistProgress, setChecklistProgress] = useState(0);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [hasAlerted, setHasAlerted] = useState(false);
+  const [fullname, setFullname] = useState("User"); // 🚀 State nama user
+  const [greeting, setGreeting] = useState("Selamat Pagi"); // 🚀 State salam dinamis
 
   const [statsData, setStatsData] = useState(initialStatsData);
 
+  // 🚀 Logic untuk mengambil salam berdasarkan jam saat ini
+  const getGreetingMessage = () => {
+    const hours = new Date().getHours();
+    if (hours >= 4 && hours < 11) return "Selamat Pagi";
+    if (hours >= 11 && hours < 15) return "Selamat Siang";
+    if (hours >= 15 && hours < 18) return "Selamat Sore";
+    return "Selamat Malam";
+  };
+
   useEffect(() => {
-    const updateDate = () => {
+    // 1. Jalankan update waktu & ucapan salam
+    const updateDateTime = () => {
       const now = new Date();
       const formattedDate = now.toLocaleDateString("id-ID", {
         weekday: "long",
@@ -22,10 +35,27 @@ const Dashboard = () => {
         year: "numeric",
       });
       setCurrentDate(formattedDate);
+      setGreeting(getGreetingMessage());
     };
 
-    updateDate();
-    const interval = setInterval(updateDate, 60000);
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 60000);
+
+    // 2. Fetch nama lengkap user dari API
+    const fetchUserData = async () => {
+      try {
+        const response = await userService.getProfile();
+        const data = response.data || response;
+        if (data?.fullname) {
+          setFullname(data.fullname);
+        }
+      } catch (error) {
+        console.error("Gagal memuat profil untuk dashboard:", error);
+      }
+    };
+
+    fetchUserData();
+
     return () => clearInterval(interval);
   }, []);
 
@@ -43,28 +73,22 @@ const Dashboard = () => {
     }
   }, [isDay7Finished, isDay8CutOff, hasAlerted]);
 
-  // 🌟 TRIGGER PEMBERSIHAN & PERPINDAHAN SIKLUS MINGGU BARU
+  // TRIGGER PEMBERSIHAN & PERPINDAHAN SIKLUS MINGGU BARU
   const handleFeedbackSubmit = (userData) => {
     console.log("Feedback siap dikirim ke database BE:", userData);
 
     setStatsData((prev) => {
-      const nextDay = 1; // 🚨 Reset kembali ke Hari 1
+      const nextDay = 1;
       const isOverCutOff = prev.currentPlanDay > prev.totalPlanDays;
-
-      // Hitung kelipatan minggu baru secara dinamis
       const baseWeek = isOverCutOff ? Math.ceil(prev.currentPlanDay / 7) : Math.ceil(prev.currentPlanDay / 7) + 1;
 
       return {
         ...prev,
-        currentPlanDay: nextDay, // 🚨 Reset Hari ke 1
-        streakDays: prev.streakDays, // 🔥 Streak dipertahankan lanjut
-        riskScore: prev.riskScore, // 🩺 Skor risiko medis tetap aman dipertahankan
-
-        // Simulasikan pergeseran tanggal target (Maju 7 hari ke siklus berikutnya)
+        currentPlanDay: nextDay,
+        streakDays: prev.streakDays,
+        riskScore: prev.riskScore,
         weekStartDate: "2026-06-22",
         weekEndDate: "2026-06-28",
-
-        // 🚨 CLEAR TOTAL 3 KOLOM STATISTIK MINGGUAN KARENA MASUK MINGGU BARU
         weeklyStats: {
           avgCompliance: 0,
           perfectDays: 0,
@@ -73,7 +97,6 @@ const Dashboard = () => {
       };
     });
 
-    // 🚨 RESET FLAG PELINDUNG MODAL SUPAYA MINGGU DEPAN BISA MUNCUL LAGI
     setHasAlerted(false);
     setShowFeedbackModal(false);
     console.log("Dashboard berhasil dibersihkan! Selamat datang di minggu berikutnya.");
@@ -84,9 +107,12 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Dashboard */}
+      {/* Header Dashboard Dinamis */}
       <div className="text-left">
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Dashboard</h1>
+        {/* 🌟 Diubah menjadi salam dinamis + nama user real dari BE */}
+        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
+          {greeting}, {fullname}!
+        </h1>
         <p className="mt-1 text-sm font-medium text-slate-500">
           {currentDate} • {currentDay === 0 ? "Fase Persiapan" : isDay8CutOff ? "Tahap Evaluasi" : `Minggu ${calculatedWeek}, Hari ${currentDay}`}
         </p>
@@ -96,14 +122,7 @@ const Dashboard = () => {
       <DashboardStats checklistProgress={checklistProgress} statsData={statsData} onOpenModal={() => setShowFeedbackModal(true)} />
 
       {/* Komponen Isi Aktivitas Harian */}
-      {/* 🌟 TIP CERDAS FE: Kita oper currentPlanDay dan totalDays sebagai pemicu key re-render */}
-      <DashboardContent
-        currentProgress={isDay8CutOff ? 0 : checklistProgress}
-        onProgressChange={setChecklistProgress}
-        isEvalMode={isDay8CutOff}
-        currentPlanDay={currentDay}
-        weekStartDate={statsData.weekStartDate} // Digunakan sebagai key identity
-      />
+      <DashboardContent currentProgress={isDay8CutOff ? 0 : checklistProgress} onProgressChange={setChecklistProgress} isEvalMode={isDay8CutOff} currentPlanDay={currentDay} weekStartDate={statsData.weekStartDate} />
 
       {/* Komponen Feedback Modal Terpisah */}
       <FeedbackModal

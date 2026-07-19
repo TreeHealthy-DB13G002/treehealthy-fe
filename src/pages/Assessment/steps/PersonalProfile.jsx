@@ -30,11 +30,11 @@ const PersonalProfile = ({ onContinue, savedData }) => {
     resolver: zodResolver(formSchema),
 
     defaultValues: {
-      age: savedData?.age || "20",
-      gender: savedData?.gender || "male",
-      activity: savedData?.activity || "working",
-      height: savedData?.height || "167",
-      weight: savedData?.weight || "71",
+      age: savedData?.age || "",
+      gender: savedData?.gender || "",
+      activity: savedData?.activity || "",
+      height: savedData?.height || "",
+      weight: savedData?.weight || "",
       familyHistory: savedData?.familyHistory || [],
     },
   });

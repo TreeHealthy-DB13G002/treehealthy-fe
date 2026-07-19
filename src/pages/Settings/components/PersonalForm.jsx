@@ -1,14 +1,16 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+import { userService } from "@/services/userServices";
 
 const formSchema = z.object({
   fullName: z.string().min(2, "Nama lengkap wajib diisi"),
@@ -22,31 +24,48 @@ const formSchema = z.object({
 });
 
 const PTM_OPTIONS = [
-  { id: "hipertensi", label: "Hipertensi (Darah Tinggi)" },
+  { id: "hypertension", label: "Hipertensi (Darah Tinggi)" }, // Disamakan dengan id assessment
   { id: "diabetes", label: "Diabetes (Kencing Manis)" },
-  { id: "jantung", label: "Penyakit Jantung Kronis" },
+  { id: "heart_disease", label: "Penyakit Jantung Kronis" },
 ];
 
-const PersonalForm = () => {
+const PersonalForm = ({ initialData, onSuccess }) => {
   const {
     register,
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
+    reset,
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "Alexander Ibraheem",
-      username: "ibraheem",
-      age: 20,
-      gender: "male",
-      activity: "working",
-      height: 167,
-      weight: 71,
+      fullName: "",
+      username: "",
+      age: "",
+      gender: "",
+      activity: "",
+      height: "",
+      weight: "",
       familyHistory: [],
     },
   });
+
+  // 🚀 PRE-FILL DATA DARI BE KE INTERNAL FORM FE
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        fullName: initialData.fullname || "",
+        username: initialData.username || "",
+        age: initialData.age || "",
+        gender: initialData.gender === 1 ? "male" : initialData.gender === 0 ? "female" : "",
+        activity: initialData.activity_level || "",
+        height: initialData.height || "",
+        weight: initialData.weight || "",
+        familyHistory: initialData.family_history || [],
+      });
+    }
+  }, [initialData, reset]);
 
   const gender = watch("gender");
   const activity = watch("activity");
@@ -84,8 +103,29 @@ const PersonalForm = () => {
     }
   };
 
+  // 🚀 SIMPAN PERUBAHAN KE BE
   const onSubmit = (values) => {
-    console.log("Payload data siap kirim ke BE Express:", values);
+    const payload = {
+      fullname: values.fullName,
+      username: values.username,
+      age: values.age,
+      gender: values.gender,
+      activity: values.activity,
+      height: values.height,
+      weight: values.weight,
+      familyHistory: values.familyHistory,
+    };
+
+    toast.promise(userService.updateProfile(payload), {
+      loading: "Menyimpan perubahan profil...",
+      success: () => {
+        if (onSuccess) onSuccess(); // Ambil ulang data terbaru dari BE
+        return "Profil Anda berhasil diperbarui!";
+      },
+      error: (err) => {
+        return err.response?.data?.message || "Gagal memperbarui profil.";
+      },
+    });
   };
 
   return (
@@ -99,7 +139,7 @@ const PersonalForm = () => {
 
         <div className="space-y-2">
           <Label className="text-xs font-bold text-[#1a5f7a] uppercase tracking-wider">Username</Label>
-          <Input {...register("username")} className="rounded-xl h-11 border-gray-200" />
+          <Input {...register("username")} className="rounded-xl h-11 border-gray-200" disabled />
           {errors.username && <p className="text-xs text-red-500">{errors.username.message}</p>}
         </div>
       </div>
@@ -125,7 +165,7 @@ const PersonalForm = () => {
       </div>
 
       {bmiInfo && (
-        <div className={`p-3 border ${bmiInfo.bg} ${bmiInfo.border} rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition-all animate-in fade-in-50 duration-200`}>
+        <div className={`p-3 border ${bmiInfo.bg} ${bmiInfo.border} rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition-all`}>
           <div className="text-xs font-semibold text-gray-700">
             Status Indeks Massa Tubuh (IMT): <strong className={`${bmiInfo.color} font-bold`}>{bmiInfo.status}</strong>
           </div>
@@ -155,9 +195,9 @@ const PersonalForm = () => {
               <SelectValue placeholder="Pilih tingkat aktivitas" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="freelance">Bekerja</SelectItem>
+              <SelectItem value="working">Bekerja</SelectItem>
+              <SelectItem value="freelance">Pekerja Lepas</SelectItem>
               <SelectItem value="not_working">Tidak Bekerja</SelectItem>
-              <SelectItem value="working">Pekerja Lepas</SelectItem>
               <SelectItem value="student">Pelajar / Mahasiswa</SelectItem>
               <SelectItem value="household">Ibu Rumah Tangga</SelectItem>
               <SelectItem value="retired">Lansia / Pensiunan</SelectItem>
@@ -179,7 +219,7 @@ const PersonalForm = () => {
                 id={option.id}
                 checked={familyHistory.includes(option.id)}
                 onCheckedChange={(checked) => handleCheckboxChange(option.id, checked)}
-                className="w-5 h-5 rounded-md border-gray-300 data-[state=checked]:bg-brand-primary data-[state=checked]:border-brand-primary data-[state=checked]:text-brand-white focus-visible:ring-brand-primary"
+                className="w-5 h-5 rounded-md border-gray-300 data-[state=checked]:bg-brand-primary data-[state=checked]:border-brand-primary"
               />
               <label htmlFor={option.id} className="text-xs text-gray-600 font-semibold cursor-pointer select-none w-full">
                 {option.label}
@@ -192,7 +232,7 @@ const PersonalForm = () => {
       </div>
 
       <div className="flex justify-end pt-4 border-t border-gray-100">
-        <Button type="submit" className="w-full sm:w-auto px-6 h-11 bg-brand-primary hover:bg-[#0369a1] text-white font-semibold rounded-xl transition shadow-sm">
+        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto px-6 h-11 bg-brand-primary hover:bg-[#0369a1] text-white font-semibold rounded-xl transition shadow-sm cursor-pointer">
           Simpan Perubahan
         </Button>
       </div>
