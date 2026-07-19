@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiGrid, FiClipboard, FiBarChart2, FiActivity, FiBookOpen, FiSettings, FiChevronDown, FiX } from "react-icons/fi";
 import { NavLink, useLocation } from "react-router-dom";
 
 import logoApp from "@/assets/icons/treehealthy-logo.png";
+import { userService } from "@/services/userServices";
 
 const menus = [
   { name: "Health Assessment", icon: FiClipboard, path: "/assessment" },
@@ -21,6 +22,40 @@ const menus = [
 const Sidebar = ({ isCollapsed, isMobileOpen, closeSidebar }) => {
   const location = useLocation();
   const [historyOpen, setHistoryOpen] = useState(true);
+
+  const [userData, setUserData] = useState({
+    fullname: "Loading...",
+    username: "Premium Member",
+  });
+
+  useEffect(() => {
+    const fetchSidebarProfile = async () => {
+      try {
+        const response = await userService.getProfile();
+        const data = response.data || response;
+
+        if (data) {
+          setUserData({
+            fullname: data.fullname || "User TreeHealthy",
+            username: data.username ? `@${data.username}` : "Premium Member",
+          });
+        }
+      } catch (error) {
+        console.error("Gagal memuat profil sidebar:", error);
+
+        setUserData({
+          fullname: "Guest User",
+          username: "Free Account",
+        });
+      }
+    };
+
+    fetchSidebarProfile();
+  }, [location.pathname]);
+  const getInitial = (name) => {
+    if (!name || name === "Loading...") return "U";
+    return name.trim().charAt(0).toUpperCase();
+  };
 
   return (
     <>
@@ -124,11 +159,11 @@ const Sidebar = ({ isCollapsed, isMobileOpen, closeSidebar }) => {
 
         <div className="border-t border-slate-100 p-4 shrink-0">
           <div className={`flex rounded-xl bg-slate-50 p-2.5 ${isCollapsed && !isMobileOpen ? "justify-center" : "items-center gap-3"}`}>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-white">A</div>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-white uppercase select-none">{getInitial(userData.fullname)}</div>
             {(!isCollapsed || isMobileOpen) && (
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-slate-700 truncate">Alexander Ibraheem</p>
-                <p className="text-xs text-slate-400 truncate">Premium Member</p>
+                <p className="text-sm font-semibold text-slate-700 truncate">{userData.fullname}</p>
+                <p className="text-xs text-slate-400 truncate">{userData.username}</p>
               </div>
             )}
           </div>

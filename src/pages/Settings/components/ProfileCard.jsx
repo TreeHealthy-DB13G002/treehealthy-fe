@@ -1,11 +1,13 @@
 import React from "react";
 import PersonalForm from "./PersonalForm";
 
-const ProfileCard = ({ fullName = "Alexander Ibraheem", lastUpdate = "Baru saja" }) => {
+const ProfileCard = ({ initialData, onRefresh }) => {
   const getInitial = (name) => {
     if (!name) return "U";
     return name.trim().charAt(0).toUpperCase();
   };
+
+  const fullName = initialData?.fullname || "Pengguna";
 
   return (
     <div className="w-full rounded-2xl border border-slate-100 bg-white p-6 md:p-8 shadow-sm">
@@ -18,11 +20,11 @@ const ProfileCard = ({ fullName = "Alexander Ibraheem", lastUpdate = "Baru saja"
           </div>
         </div>
         <div className="text-left sm:text-right">
-          <span className="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">Terakhir diperbarui: {lastUpdate}</span>
+          <span className="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">Terakhir diperbarui: Baru saja</span>
         </div>
       </div>
 
-      <PersonalForm />
+      <PersonalForm initialData={initialData} onSuccess={onRefresh} />
     </div>
   );
 };
