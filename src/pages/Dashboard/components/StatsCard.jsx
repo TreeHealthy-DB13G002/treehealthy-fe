@@ -1,9 +1,9 @@
 import { FiActivity, FiZap, FiCalendar } from "react-icons/fi";
 
 const StatsCard = ({ variant, value, label, subtext, progress, className = "", onClick, isClickable = false }) => {
-  // 🌟 AMAN DARI DATA KOSONG: Cek jika nilainya bernilai kosong atau tanda minus
+  // 🌟 FIX: Safety check untuk mengantisipasi nilai null/undefined dari BE
   const isValueEmpty = value === "--" || value === undefined || value === null;
-  const numericValue = isValueEmpty ? 0 : parseFloat(value) || 0;
+  const numericValue = isValueEmpty ? 0 : parseFloat(String(value).replace("%", "")) || 0;
 
   const config = {
     streak: {
@@ -13,7 +13,6 @@ const StatsCard = ({ variant, value, label, subtext, progress, className = "", o
     },
     risk: {
       icon: FiActivity,
-      // 🌟 KOREKSI: Jika data kosong, beri warna netral abu-abu (slate) biar serasi dengan card-nya
       iconColor: isValueEmpty ? "text-slate-400" : numericValue > 60 ? "text-red-600" : numericValue >= 30 ? "text-amber-600" : "text-green-600",
       iconBg: isValueEmpty ? "bg-slate-100" : numericValue > 60 ? "bg-red-100/60" : numericValue >= 30 ? "bg-amber-100/60" : "bg-green-100/60",
     },
@@ -40,7 +39,7 @@ const StatsCard = ({ variant, value, label, subtext, progress, className = "", o
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</p>
-          <h2 className="text-xl font-black text-slate-800 tracking-tight">{value}</h2>
+          <h2 className="text-xl font-black text-slate-800 tracking-tight">{isValueEmpty ? "--" : value}</h2>
         </div>
 
         <div className={`p-3 rounded-xl shrink-0 transition-colors duration-300 ${current.iconBg} ${current.iconColor}`}>
@@ -52,7 +51,7 @@ const StatsCard = ({ variant, value, label, subtext, progress, className = "", o
         {progress !== undefined && variant !== "risk" ? (
           <div className="space-y-1.5">
             <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-              <div className={`h-full rounded-full transition-all duration-500 ${current.iconColor.replace("text", "bg")}`} style={{ width: `${Math.min(progress, 100)}%` }} />
+              <div className={`h-full rounded-full transition-all duration-500 ${current.iconColor.replace("text", "bg")}`} style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }} />
             </div>
             <p className="text-xs font-semibold text-slate-400">{subtext}</p>
           </div>

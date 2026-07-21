@@ -1,15 +1,15 @@
 import HealthCharacterCard from "../components/HealthCharacterCard";
 import DailyChecklistCard from "../components/DailyChecklistCard";
 
-const DashboardContent = ({ currentProgress, onProgressChange, isEvalMode = false, currentPlanDay, weekStartDate }) => {
+const DashboardContent = ({ tasks, currentProgress, treeHealth, onToggleTask, currentPlanDay, isLoading, isError, onRetry }) => {
   return (
     <div className="grid gap-6 md:grid-cols-5 items-start">
       <div className="md:col-span-2 h-full">
-        <HealthCharacterCard currentProgress={currentProgress} />
+        <HealthCharacterCard currentProgress={currentProgress} treeHealth={treeHealth} />
       </div>
 
       <div className="md:col-span-3 h-full">
-        <DailyChecklistCard key={`${weekStartDate}-day-${currentPlanDay}`} onProgressChange={onProgressChange} isEvalMode={isEvalMode} currentPlanDay={currentPlanDay} />
+        <DailyChecklistCard tasks={tasks} onToggleTask={onToggleTask} currentPlanDay={currentPlanDay} isLoading={isLoading} isError={isError} onRetry={onRetry} />
       </div>
     </div>
   );

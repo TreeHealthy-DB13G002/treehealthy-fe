@@ -1,14 +1,14 @@
 import StatsCard from "../components/StatsCard";
 
-const DashboardStats = ({ checklistProgress = 0, statsData, onOpenModal }) => {
-  const risk = statsData?.riskScore ?? null;
-  const currentDay = statsData?.currentPlanDay ?? 0;
-  const totalDays = statsData?.totalPlanDays ?? 7;
+const DashboardStats = ({ checklistProgress = 0, dashboardData, onOpenModal }) => {
+  const risk = dashboardData?.ptm_risk_score ?? null;
+  const currentDay = dashboardData?.current_plan_day ?? 1;
+  const totalDays = dashboardData?.total_plan_days ?? 7;
+  const streakDays = dashboardData?.streak_days ?? 0;
 
   const isAllTasksCompleted = checklistProgress === 100;
-  const activeStreak = isAllTasksCompleted ? (statsData?.streakDays ?? 0) + 1 : (statsData?.streakDays ?? 0);
 
-  // ─── 🌟 LOGIKA UNTUK TAMPILAN JIKA DATA RISKO KOSONG (NULL) ───
+  // Skor Risiko PTM Styling
   let riskBgColor = "border-slate-200 bg-white";
   let riskSubtext = "⚪ Menunggu kalkulasi data kesehatan...";
   let riskValueLabel = "--";
@@ -19,34 +19,29 @@ const DashboardStats = ({ checklistProgress = 0, statsData, onOpenModal }) => {
       riskBgColor = "border-green-300 bg-green-50/80";
       riskSubtext = "🟢 Risiko Rendah: < 30.0%";
     } else if (risk >= 30 && risk <= 60) {
-      riskBgColor = "border-amber-300 bg-amber-50/80 animate-pulse";
+      riskBgColor = "border-amber-300 bg-amber-50/80";
       riskSubtext = "🟡 Risiko Sedang: 30.0% - 60.0%";
-    } else if (risk > 60) {
-      riskBgColor = "border-red-300 bg-red-50/80 animate-pulse";
+    } else {
+      riskBgColor = "border-red-300 bg-red-50/80";
       riskSubtext = "🔴 Risiko Tinggi: > 60.0%";
     }
   }
 
-  // ─── LOGIKA PROGRESS PROGRAM SEHAT ───
+  // Program Plan Styling
   const isProgramFinished = currentDay === totalDays && isAllTasksCompleted;
   let planBgColor = "border-sky-100 bg-gradient-to-br from-sky-50/40 to-white";
   let planValueLabel = `${currentDay}/${totalDays}`;
+  let planSubtext = `Progress berjalan ${Math.round((currentDay / totalDays) * 100)}%`;
 
-  const safeTotalDays = totalDays > 0 ? totalDays : 7;
-  let planSubtext = `Progress berjalan ${Math.round((currentDay / safeTotalDays) * 100)}%`;
-
-  if (currentDay === 0) {
-    planValueLabel = `0/${safeTotalDays}`;
-    planSubtext = "🚀 Fase Persiapan: Pengenalan modul aktivitas";
-  } else if (currentDay > safeTotalDays) {
+  if (currentDay > totalDays) {
     planBgColor = "border-amber-200 bg-amber-100/60";
-    planSubtext = "⚠️ Waktu siklus habis. Klik untuk isi evaluasi wajib.";
+    planSubtext = "⚠️ Siklus 7 hari selesai. Klik untuk isi evaluasi wajib.";
   } else if (isProgramFinished) {
     planBgColor = "border-emerald-300 bg-emerald-100 font-medium";
-    planSubtext = "🎉 Program Selesai! Klik di sini untuk isi feedback harian";
+    planSubtext = "🎉 Program Selesai! Klik untuk isi evaluasi mingguan.";
   }
 
-  const isPlanClickable = isProgramFinished || currentDay > safeTotalDays;
+  const isPlanClickable = currentDay === 7;
 
   return (
     <div className="w-full">
@@ -54,24 +49,14 @@ const DashboardStats = ({ checklistProgress = 0, statsData, onOpenModal }) => {
         <StatsCard
           variant="streak"
           label="Konsistensi Rutin"
-          value={`${activeStreak} Hari`}
+          value={`${streakDays} Hari`}
           className={isAllTasksCompleted ? "border-orange-200 bg-orange-50/30" : "border-slate-200 bg-white"}
-          subtext={isAllTasksCompleted ? "🔥 Misi hari ini tuntas! Streak Anda aktif menyala." : "Selesaikan seluruh checklist hari ini untuk mengaktifkan streak!"}
+          subtext={isAllTasksCompleted ? "🔥 Misi hari ini tuntas! Streak Anda aktif menyala." : "Selesaikan seluruh checklist hari ini untuk mempertahankan streak!"}
         />
 
-        {/* 🌟 FIX: Sekarang mengirim value yang sudah diproteksi, bebas dari bug 'null%' */}
         <StatsCard variant="risk" label="Skor Risiko PTM" value={riskValueLabel} className={riskBgColor} subtext={riskSubtext} />
 
-        <StatsCard
-          variant="plan"
-          label="Rencana Program Sehat"
-          value={planValueLabel}
-          progress={currentDay === 0 ? 0 : (currentDay / safeTotalDays) * 100}
-          className={planBgColor}
-          subtext={planSubtext}
-          isClickable={isPlanClickable}
-          onClick={onOpenModal}
-        />
+        <StatsCard variant="plan" label="Rencana Program Sehat" value={planValueLabel} progress={(currentDay / totalDays) * 100} className={planBgColor} subtext={planSubtext} isClickable={isPlanClickable} onClick={onOpenModal} />
       </div>
     </div>
   );

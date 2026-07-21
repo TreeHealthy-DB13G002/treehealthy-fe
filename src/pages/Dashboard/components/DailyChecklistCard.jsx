@@ -1,71 +1,10 @@
-import { useState, useEffect } from "react";
 import ChecklistItem from "./ChecklistItem";
-import tasks from "../data/tasks";
+import { FiInbox, FiAlertCircle, FiRefreshCw } from "react-icons/fi";
+import { Empty, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 
-const DailyChecklistCard = ({ onProgressChange, isEvalMode = false, currentPlanDay = 1 }) => {
-  const [taskList, setTaskList] = useState(tasks);
-  const isOnboardingMode = currentPlanDay === 0;
+const DailyChecklistCard = ({ tasks = [], onToggleTask, currentPlanDay = 1, isLoading = false, isError = false, onRetry }) => {
+  const completedCount = tasks.filter((t) => t.status === "completed").length;
 
-  const calculateProgress = (currentTasks) => {
-    if (!currentTasks || currentTasks.length === 0) return 0;
-    const completedCount = currentTasks.filter((t) => t.status === "completed").length;
-    return (completedCount / currentTasks.length) * 100;
-  };
-
-  useEffect(() => {
-    const progress = isEvalMode || isOnboardingMode ? 0 : calculateProgress(taskList);
-    if (onProgressChange) {
-      onProgressChange(progress);
-    }
-  }, [taskList, isEvalMode, isOnboardingMode]);
-
-  const handleCheckTask = (id) => {
-    setTaskList((prevTasks) =>
-      prevTasks.map((task) => {
-        if (task.id === id && task.status === "in_progress") {
-          return {
-            ...task,
-            status: "completed",
-          };
-        }
-        return task;
-      }),
-    );
-  };
-
-  // ─── TAMPILAN FASE EVALUASI ───
-  if (isEvalMode) {
-    return (
-      <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/20 p-6 sm:p-8 text-center flex flex-col items-center justify-center h-full min-h-[340px] space-y-3">
-        <span className="text-3xl">🎉</span>
-        <div className="space-y-1">
-          <h3 className="text-sm font-bold text-slate-800">Siklus Program 7 Hari Selesai</h3>
-          <p className="text-xs font-medium text-slate-400 max-w-xs mx-auto leading-relaxed">Tidak ada tugas harian aktif. Silakan isi feedback evaluasi di boks statistik atas untuk mendapatkan AI Action Plan terbaru.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── TAMPILAN FASE ONBOARDING ───
-  if (isOnboardingMode) {
-    return (
-      <div className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/30 p-6 sm:p-8 text-center flex flex-col items-center justify-center h-full min-h-[340px] space-y-4">
-        <span className="text-4xl animate-bounce">🌱</span>
-        <div className="space-y-1.5">
-          <h3 className="text-base font-bold text-slate-800">Mempersiapkan Modul Sehat Anda</h3>
-          <p className="text-xs font-medium text-slate-500 max-w-sm mx-auto leading-relaxed">
-            AI kami berhasil merancang <span className="font-bold text-sky-600">7-Day Action Plan</span> khusus untuk profil risiko Anda. Misi pertama Anda akan resmi aktif **besok pagi**.
-          </p>
-        </div>
-        <div className="w-full max-w-xs bg-white border border-slate-100 p-3 rounded-xl text-left space-y-1 shadow-2xs">
-          <span className="text-[10px] font-black uppercase text-sky-600 tracking-wider">Tips Malam Ini:</span>
-          <p className="text-[11px] font-medium text-slate-400 leading-normal">Usahakan tidur sebelum jam 22.00 dan siapkan botol minum 2 Liter untuk mempermudah checklist besok pagi, bro!</p>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── TAMPILAN KONDISI NORMAL ───
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs flex flex-col h-full">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-2 border-b border-slate-100">
@@ -74,14 +13,47 @@ const DailyChecklistCard = ({ onProgressChange, isEvalMode = false, currentPlanD
           <p className="text-xs font-medium text-slate-500">Target aktivitas harian dari Program Sehat 7 Hari Anda</p>
         </div>
         <span className="text-xs font-bold bg-[#e0f2fe] text-[#0369a1] px-3 py-1.5 rounded-full border border-sky-100 shadow-3xs whitespace-nowrap">
-          {taskList.filter((t) => t.status === "completed").length}/{taskList.length} Selesai
+          {completedCount}/{tasks.length} Selesai
         </span>
       </div>
 
-      <div className="space-y-3 max-h-[270px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent" style={{ scrollBehavior: "smooth" }}>
-        {taskList.map((task) => (
-          <ChecklistItem key={task.id} title={task.title} status={task.status} description={task.description} onCheck={() => handleCheckTask(task.id)} />
-        ))}
+      <div className="space-y-3 min-h-[220px] max-h-[270px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent flex-1 flex flex-col justify-center" style={{ scrollBehavior: "smooth" }}>
+        {/* 1️⃣ KONDISI LOADING */}
+        {isLoading ? (
+          <Empty className="py-8 my-auto flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-2">
+              <FiRefreshCw size={22} className="animate-spin" />
+            </div>
+            <EmptyTitle className="text-sm font-bold text-slate-700">Menyiapkan Rencana Harian...</EmptyTitle>
+            <EmptyDescription className="text-xs text-slate-400 max-w-xs">Tunggu sebentar, AI sedang merancang dan memuat tugas kesehatan Anda.</EmptyDescription>
+          </Empty>
+        ) : isError ? (
+          /* 2️⃣ KONDISI ERROR / GAGAL FETCH */
+          <Empty className="py-8 my-auto flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mb-2">
+              <FiAlertCircle size={24} />
+            </div>
+            <EmptyTitle className="text-sm font-bold text-slate-700">Gagal Memuat Rencana Harian</EmptyTitle>
+            <EmptyDescription className="text-xs text-slate-400 max-w-xs mb-3">Terjadi kendala saat mengambil tugas. Pastikan koneksi internet terhubung.</EmptyDescription>
+            {onRetry && (
+              <button onClick={onRetry} className="px-3.5 py-1.5 bg-brand-primary hover:bg-brand-secondary text-white text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5 shadow-xs">
+                <FiRefreshCw size={12} /> Coba Lagi
+              </button>
+            )}
+          </Empty>
+        ) : tasks.length === 0 ? (
+          /* 3️⃣ KONDISI DATA KOSONG REAL */
+          <Empty className="py-8 my-auto flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-brand-secondary flex items-center justify-center mb-2">
+              <FiInbox size={24} />
+            </div>
+            <EmptyTitle className="text-sm font-bold text-slate-700">Belum Ada Misi Hari Ini</EmptyTitle>
+            <EmptyDescription className="text-xs text-slate-400 max-w-xs">Semua checklist harian belum tersedia atau telah selesai dikerjakan.</EmptyDescription>
+          </Empty>
+        ) : (
+          /* 4️⃣ LIST CHECKLIST */
+          tasks.map((task) => <ChecklistItem key={task.id} title={task.title || task.name} status={task.status || (task.is_completed ? "completed" : "in_progress")} description={task.description} onCheck={() => onToggleTask(task.id)} />)
+        )}
       </div>
     </div>
   );
