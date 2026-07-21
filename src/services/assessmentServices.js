@@ -38,4 +38,16 @@ export const assessmentService = {
       throw error;
     }
   },
+
+  /**
+   * 4. Mengaktifkan siklus rencana sehat harian pengguna (Buatkan Program Sehat)
+   */
+  generatePlan: async () => {
+    try {
+      const response = await axiosClient.post("/assessment/generate-plan");
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

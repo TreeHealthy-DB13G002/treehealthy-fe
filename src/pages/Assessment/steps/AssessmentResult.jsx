@@ -1,18 +1,28 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { FiLoader } from "react-icons/fi";
 import AssessmentCard from "../components/AssessmentCard";
-import { result } from "../data/result";
+import { assessmentService } from "@/services/assessmentServices";
 
-const AssessmentResult = () => {
+const AssessmentResult = ({ apiData }) => {
   const navigate = useNavigate();
-  const data = result;
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const targetPrediction = data.predictionScore;
-
+  // 🚀 Ambil data dari API atau gunakan fallback jika data belum termuat sempurna
+  const targetPrediction = apiData?.final_risk_score || 0;
   const circumference = 2 * Math.PI * 54;
+
   const [prediction, setPrediction] = useState(0);
   const [strokeDashoffset, setStrokeDashoffset] = useState(circumference);
   const hasAnimated = useRef(false);
+
+  // Mapping 3 Pilar Medis untuk Progress Bar Kiri bawah
+  const healthCategories = [
+    { key: "physical", label: "Physical Health", score: apiData?.physical_health_score || 0 },
+    { key: "lifestyle", label: "Lifestyle habits", score: apiData?.lifestyle_score || 0 },
+    { key: "mental", label: "Mental Health", score: apiData?.mental_score || 0 },
+  ];
 
   const getRiskDetails = (score) => {
     if (score >= 70) {
@@ -60,19 +70,19 @@ const AssessmentResult = () => {
     let startTimestamp = null;
     const duration = 1500;
 
-    const step = (timestamp) => {
+    const stepAnimation = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
 
       if (progress < 1) {
         setPrediction(Math.floor(Math.random() * 100));
-        requestAnimationFrame(step);
+        requestAnimationFrame(stepAnimation);
       } else {
         setPrediction(targetPrediction);
       }
     };
 
-    requestAnimationFrame(step);
+    requestAnimationFrame(stepAnimation);
 
     const timer = setTimeout(() => {
       const targetOffset = circumference - (targetPrediction / 100) * circumference;
@@ -81,6 +91,24 @@ const AssessmentResult = () => {
 
     return () => clearTimeout(timer);
   }, [targetPrediction, circumference]);
+
+  // 🚀 HANDLER UNTUK GENERATE PLAN & REDIRECT DASHBOARD
+  const handleGeneratePlan = async () => {
+    setIsGenerating(true);
+
+    toast.promise(assessmentService.generatePlan(), {
+      loading: "Memproses & merancang program sehat 7 hari Anda...",
+      success: () => {
+        setIsGenerating(false);
+        navigate("/dashboard");
+        return "Program Sehat 7 Hari Berhasil Diaktifkan! 🎉";
+      },
+      error: (err) => {
+        setIsGenerating(false);
+        return err.response?.data?.message || "Gagal mengaktifkan program sehat.";
+      },
+    });
+  };
 
   return (
     <AssessmentCard>
@@ -118,7 +146,7 @@ const AssessmentResult = () => {
             </div>
 
             <div className="space-y-4">
-              {data.healthCategories.map((item) => (
+              {healthCategories.map((item) => (
                 <div key={item.key}>
                   <div className="flex justify-between text-xs font-bold text-brand-secondary mb-1.5">
                     <span className="opacity-80">{item.label}</span>
@@ -132,19 +160,30 @@ const AssessmentResult = () => {
             </div>
           </div>
 
+          {/* Sisi Kanan: AI Health Explanation */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 flex flex-col h-[430px]">
             <h3 className="font-bold text-sm uppercase tracking-wider text-brand-secondary mb-4 flex-shrink-0">AI Health Explanation</h3>
-            <div className="flex-1 overflow-y-auto pr-2 text-sm leading-relaxed text-brand-text font-medium space-y-4">
-              {data.explanations.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
+            <div className="flex-1 overflow-y-auto pr-2 text-sm leading-relaxed text-brand-text font-medium whitespace-pre-line space-y-4">
+              <p>{apiData?.ai_explainer_text || "AI sedang menyusun penjelasan medis untuk Anda..."}</p>
             </div>
           </div>
         </div>
 
+        {/* 🚀 TOMBOL UTAMA */}
         <div className="mt-8">
-          <button onClick={() => navigate("/dashboard")} className="w-full bg-brand-primary text-white font-bold h-12 rounded-xl">
-            Buatkan Program Sehat
+          <button
+            onClick={handleGeneratePlan}
+            disabled={isGenerating}
+            className="w-full bg-brand-primary text-white font-bold h-12 rounded-xl cursor-pointer hover:bg-brand-secondary transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-md"
+          >
+            {isGenerating ? (
+              <>
+                <FiLoader className="animate-spin text-lg" />
+                <span>Menyiapkan Program Sehat...</span>
+              </>
+            ) : (
+              <span>Buatkan Program Sehat</span>
+            )}
           </button>
         </div>
       </div>

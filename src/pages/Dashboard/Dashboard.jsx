@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import DashboardContent from "./Partials/DashboardContent";
 import DashboardStats from "./Partials/DashboardStats";
 import FeedbackModal from "./components/FeedbackModal";
-import { initialStatsData } from "./data/dashboard";
-import { userService } from "@/services/userServices"; // 🚀 Import userService
+import { userService } from "@/services/userServices";
+import { dashboardService } from "@/services/dashboardServices";
 
 const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState("");
-  const [checklistProgress, setChecklistProgress] = useState(0);
+  const [fullname, setFullname] = useState("User");
+  const [greeting, setGreeting] = useState("Selamat Pagi");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+
+  // State Utama Integrasi Backend
+  const [dashboardData, setDashboardData] = useState(null);
+  const [tasks, setTasks] = useState([]);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [hasAlerted, setHasAlerted] = useState(false);
-  const [fullname, setFullname] = useState("User"); // 🚀 State nama user
-  const [greeting, setGreeting] = useState("Selamat Pagi"); // 🚀 State salam dinamis
 
-  const [statsData, setStatsData] = useState(initialStatsData);
-
-  // 🚀 Logic untuk mengambil salam berdasarkan jam saat ini
   const getGreetingMessage = () => {
     const hours = new Date().getHours();
     if (hours >= 4 && hours < 11) return "Selamat Pagi";
@@ -24,117 +26,168 @@ const Dashboard = () => {
     return "Selamat Malam";
   };
 
+  // Fetch Data Dashboard dari API Real
+  const fetchDashboardData = async () => {
+    try {
+      setIsLoading(true);
+      setIsError(false);
+      const response = await dashboardService.getCurrentData();
+      const data = response.data?.data || response.data;
+
+      if (data) {
+        setDashboardData(data);
+        setTasks(data.tasks || []);
+      }
+    } catch (error) {
+      console.error("Fetch Dashboard Error:", error);
+      setIsError(true);
+      toast.error("Gagal memuat rencana harian");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // 1. Jalankan update waktu & ucapan salam
     const updateDateTime = () => {
       const now = new Date();
-      const formattedDate = now.toLocaleDateString("id-ID", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
-      setCurrentDate(formattedDate);
+      setCurrentDate(
+        now.toLocaleDateString("id-ID", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
+      );
       setGreeting(getGreetingMessage());
     };
 
     updateDateTime();
     const interval = setInterval(updateDateTime, 60000);
 
-    // 2. Fetch nama lengkap user dari API
-    const fetchUserData = async () => {
-      try {
-        const response = await userService.getProfile();
-        const data = response.data || response;
-        if (data?.fullname) {
-          setFullname(data.fullname);
-        }
-      } catch (error) {
-        console.error("Gagal memuat profil untuk dashboard:", error);
-      }
-    };
+    // Fetch User Profile
+    userService
+      .getProfile()
+      .then((res) => {
+        const d = res.data || res;
+        if (d?.fullname) setFullname(d.fullname);
+      })
+      .catch(() => {});
 
-    fetchUserData();
+    fetchDashboardData();
 
     return () => clearInterval(interval);
   }, []);
 
-  const currentDay = statsData.currentPlanDay;
-  const totalDays = statsData.totalPlanDays;
-  const isAllTasksCompleted = checklistProgress === 100;
+  // Handler Toggle Task (Dioper ke DailyChecklistCard)
+  const handleToggleTask = async (taskId) => {
+    try {
+      // Optimistic UI Update
+      const updatedTasks = tasks.map((t) => {
+        if (t.id === taskId) {
+          const newStatus = t.status === "completed" ? "in_progress" : "completed";
+          return { ...t, status: newStatus };
+        }
+        return t;
+      });
 
-  const isDay7Finished = currentDay === totalDays && isAllTasksCompleted;
-  const isDay8CutOff = currentDay > totalDays;
+      setTasks(updatedTasks);
 
-  useEffect(() => {
-    if ((isDay7Finished || isDay8CutOff) && !hasAlerted) {
-      setShowFeedbackModal(true);
-      setHasAlerted(true);
+      // Tembak API Patch Toggle
+      const res = await dashboardService.toggleTask(taskId);
+      const resData = res.data?.data || res.data;
+
+      // Update data pohon jika BE me-return objek status baru
+      if (resData?.tree_health) {
+        setDashboardData((prev) => ({ ...prev, tree_health: resData.tree_health }));
+      }
+
+      // Cek apakah Hari 7 & Semua Task Selesai
+      const completedCount = updatedTasks.filter((t) => t.status === "completed").length;
+      const isAllDone = completedCount === updatedTasks.length;
+      const currentDay = dashboardData?.current_plan_day || 1;
+
+      if (currentDay === 7 && isAllDone) {
+        toast.success("Selamat! Program 7 Hari Lu Selesai 🎉", {
+          description: "Silakan isi evaluasi mingguan untuk membuka siklus berikutnya.",
+          action: {
+            label: "Isi Evaluasi",
+            onClick: () => setShowFeedbackModal(true),
+          },
+          duration: 6000,
+        });
+        setShowFeedbackModal(true);
+      }
+    } catch (error) {
+      toast.error("Gagal mengubah status tugas");
+      fetchDashboardData(); // Rollback jika error
     }
-  }, [isDay7Finished, isDay8CutOff, hasAlerted]);
-
-  // TRIGGER PEMBERSIHAN & PERPINDAHAN SIKLUS MINGGU BARU
-  const handleFeedbackSubmit = (userData) => {
-    console.log("Feedback siap dikirim ke database BE:", userData);
-
-    setStatsData((prev) => {
-      const nextDay = 1;
-      const isOverCutOff = prev.currentPlanDay > prev.totalPlanDays;
-      const baseWeek = isOverCutOff ? Math.ceil(prev.currentPlanDay / 7) : Math.ceil(prev.currentPlanDay / 7) + 1;
-
-      return {
-        ...prev,
-        currentPlanDay: nextDay,
-        streakDays: prev.streakDays,
-        riskScore: prev.riskScore,
-        weekStartDate: "2026-06-22",
-        weekEndDate: "2026-06-28",
-        weeklyStats: {
-          avgCompliance: 0,
-          perfectDays: 0,
-          riskDrop: 0,
-        },
-      };
-    });
-
-    setHasAlerted(false);
-    setShowFeedbackModal(false);
-    console.log("Dashboard berhasil dibersihkan! Selamat datang di minggu berikutnya.");
   };
 
-  const calculatedWeek = currentDay === 0 ? 0 : Math.ceil(currentDay / 7);
-  const modalWeek = isDay8CutOff ? Math.max(1, calculatedWeek - 1) : calculatedWeek;
+  // Handler Submit Evaluasi Mingguan (Complete Cycle)
+  const handleFeedbackSubmit = async (feedbackData) => {
+    try {
+      const payload = {
+        reflection: feedbackData.reflection,
+        week: calculatedWeek,
+      };
+
+      toast.promise(dashboardService.completeCycle(payload), {
+        loading: "Memproses evaluasi & memperbarui siklus mingguan...",
+        success: () => {
+          setShowFeedbackModal(false);
+          fetchDashboardData(); // Refetch data dashboard untuk Minggu baru
+          return "Siklus baru berhasil dimuat!";
+        },
+        error: (err) => err.response?.data?.message || "Gagal menyimpan evaluasi.",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const currentDay = dashboardData?.current_plan_day || 1;
+  const calculatedWeek = dashboardData?.current_week || Math.ceil(currentDay / 7) || 1;
+  const completedCount = tasks.filter((t) => t.status === "completed").length;
+  const currentProgress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
   return (
     <div className="space-y-6">
-      {/* Header Dashboard Dinamis */}
-      <div className="text-left">
-        {/* 🌟 Diubah menjadi salam dinamis + nama user real dari BE */}
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
-          {greeting}, {fullname}!
-        </h1>
-        <p className="mt-1 text-sm font-medium text-slate-500">
-          {currentDate} • {currentDay === 0 ? "Fase Persiapan" : isDay8CutOff ? "Tahap Evaluasi" : `Minggu ${calculatedWeek}, Hari ${currentDay}`}
-        </p>
+      {/* Header Dashboard */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-left">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
+            {greeting}, {fullname}!
+          </h1>
+          <p className="mt-1 text-sm font-medium text-slate-500">
+            {currentDate} • Minggu {calculatedWeek}, Hari {currentDay}
+          </p>
+        </div>
+
+        {/* Tombol Manual Buka Evaluasi Pas Hari Ke-7 */}
+        {currentDay === 7 && (
+          <button onClick={() => setShowFeedbackModal(true)} className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-sm animate-bounce self-start sm:self-auto">
+            📋 Isi Evaluasi Minggu {calculatedWeek}
+          </button>
+        )}
       </div>
 
       {/* Komponen Statistik Utama */}
-      <DashboardStats checklistProgress={checklistProgress} statsData={statsData} onOpenModal={() => setShowFeedbackModal(true)} />
+      <DashboardStats checklistProgress={currentProgress} dashboardData={dashboardData} onOpenModal={() => setShowFeedbackModal(true)} />
 
-      {/* Komponen Isi Aktivitas Harian */}
-      <DashboardContent currentProgress={isDay8CutOff ? 0 : checklistProgress} onProgressChange={setChecklistProgress} isEvalMode={isDay8CutOff} currentPlanDay={currentDay} weekStartDate={statsData.weekStartDate} />
-
-      {/* Komponen Feedback Modal Terpisah */}
-      <FeedbackModal
-        isOpen={showFeedbackModal}
-        onClose={() => setShowFeedbackModal(false)}
-        isDay8CutOff={isDay8CutOff}
-        onSubmitSuccess={handleFeedbackSubmit}
-        currentWeek={modalWeek}
-        startDate={statsData.weekStartDate}
-        endDate={statsData.weekEndDate}
-        stats={statsData.weeklyStats}
+      {/* Komponen Content Aktivitas & Pohon */}
+      <DashboardContent
+        tasks={tasks}
+        currentProgress={currentProgress}
+        treeHealth={dashboardData?.tree_health || "healthy"}
+        onToggleTask={handleToggleTask}
+        currentPlanDay={currentDay}
+        isLoading={isLoading}
+        isError={isError}
+        onRetry={fetchDashboardData}
       />
+
+      {/* Modal Evaluasi */}
+      <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} onSubmitSuccess={handleFeedbackSubmit} currentWeek={calculatedWeek} stats={dashboardData?.weekly_stats} />
     </div>
   );
 };
