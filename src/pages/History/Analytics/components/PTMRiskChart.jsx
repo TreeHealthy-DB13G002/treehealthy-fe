@@ -1,15 +1,35 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { FiTrendingUp } from "react-icons/fi";
+// 🚨 Sesuaikan path import komponen Empty sesuai struktur folder lu:
+import { Empty, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 
-export default function PTMRiskChart({ filteredData }) {
-  // Ambil baseline (data terlama) dan current (data terbaru) secara dinamis
-  const baselineScore = filteredData.length > 0 ? filteredData[0].score : 0;
-  const currentScore = filteredData.length > 0 ? filteredData[filteredData.length - 1].score : 0;
+export default function PTMRiskChart({ filteredData = [] }) {
+  // Parsing nilai dengan fallback agar fleksibel terhadap key dari BE (score/value)
+  const formattedData = filteredData.map((item) => ({
+    week: item.week || item.label || "W1",
+    score: item.score ?? item.value ?? 0,
+  }));
+
+  const baselineScore = formattedData.length > 0 ? formattedData[0].score : 0;
+  const currentScore = formattedData.length > 0 ? formattedData[formattedData.length - 1].score : 0;
+
+  if (formattedData.length === 0) {
+    return (
+      <Empty className="py-12 my-auto flex flex-col items-center justify-center text-center">
+        <div className="w-12 h-12 rounded-2xl bg-sky-50 text-[#0284c7] flex items-center justify-center mb-2">
+          <FiTrendingUp size={24} />
+        </div>
+        <EmptyTitle className="text-sm font-bold text-slate-700">Belum Ada Data Tren Risiko PTM</EmptyTitle>
+        <EmptyDescription className="text-xs text-slate-400 max-w-xs">Grafik tren risiko akan muncul secara otomatis setelah Anda menyelesaikan evaluasi mingguan.</EmptyDescription>
+      </Empty>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <div className="h-[280px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+          <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
             <defs>
               <linearGradient id="analyticsRiskGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#0284c7" stopOpacity={0.15} />
@@ -40,7 +60,7 @@ export default function PTMRiskChart({ filteredData }) {
         </ResponsiveContainer>
       </div>
 
-      <div className="flex items-center gap-6 pt-2 text-xs font-bold pl-2">
+      <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-2 text-xs font-bold pl-2">
         <div className="flex items-center gap-2 text-slate-700">
           <span className="h-3 w-3 rounded-full bg-[#0284c7]" />
           <span>Risiko PTM %</span>

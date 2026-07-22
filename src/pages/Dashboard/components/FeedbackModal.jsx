@@ -1,9 +1,16 @@
 import { useState } from "react";
+import { FiX } from "react-icons/fi";
 
-const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, stats = { avg_compliance: 83, perfect_days: 3, risk_drop: 16 }, onSubmitSuccess }) => {
+const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, stats = {}, onSubmitSuccess }) => {
   const [reflection, setReflection] = useState("");
 
   if (!isOpen) return null;
+
+  // Parsing data stats secara aman dari prop
+  const compliance = stats?.avg_compliance ?? stats?.avgCompliance ?? stats?.compliance ?? 0;
+  const perfectDays = stats?.perfect_days ?? stats?.perfectDays ?? 0;
+  const doneTasks = stats?.done_tasks ?? stats?.doneTasks ?? 0;
+  const totalTasks = stats?.total_tasks ?? stats?.totalTasks ?? 0;
 
   const handleSubmit = () => {
     if (onSubmitSuccess) {
@@ -12,33 +19,38 @@ const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, stats = { avg_complia
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100 flex flex-col space-y-5 text-left transform duration-300">
+        {/* Header Modal */}
         <div className="flex justify-between items-start flex-shrink-0">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-slate-800">✨ Evaluasi Kesehatan Mingguan</span>
             </div>
-            <p className="text-xs font-semibold text-slate-400">Minggu {currentWeek}</p>
+            <p className="text-xs font-semibold text-slate-400">Siklus Minggu {currentWeek}</p>
           </div>
           <button onClick={onClose} className="h-7 w-7 rounded-lg bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center hover:bg-slate-200 transition-all cursor-pointer">
-            ✕
+            <FiX size={16} />
           </button>
         </div>
 
-        {/* Metric Grid */}
+        {/* ─── METRIC GRID SINKRON (3 KOLOM KONSISTEN) ─── */}
         <div className="grid grid-cols-3 gap-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100 text-center flex-shrink-0">
           <div>
-            <div className="text-2xl font-black text-brand-secondary">{stats?.avg_compliance || stats?.avgCompliance || 0}%</div>
-            <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Rata-rata Kepatuhan</div>
+            <div className="text-xl sm:text-2xl font-black text-brand-secondary">{compliance}%</div>
+            <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Rasio Kepatuhan</div>
           </div>
+
           <div className="border-x border-slate-200">
-            <div className="text-2xl font-black text-brand-secondary">{stats?.perfect_days || stats?.perfectDays || 0}</div>
+            <div className="text-xl sm:text-2xl font-black text-brand-secondary">{perfectDays}</div>
             <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Hari Sempurna</div>
           </div>
+
           <div>
-            <div className="text-2xl font-black text-brand-secondary">-{stats?.risk_drop || stats?.riskDrop || 0}%</div>
-            <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Penurunan Risiko</div>
+            <div className="text-xl sm:text-2xl font-black text-brand-secondary">
+              {doneTasks} <span className="text-xs font-bold text-slate-400">/ {totalTasks}</span>
+            </div>
+            <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Tugas Selesai</div>
           </div>
         </div>
 
@@ -55,7 +67,7 @@ const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, stats = { avg_complia
         </div>
 
         <button onClick={handleSubmit} className="w-full bg-sky-600 text-white font-bold py-3 text-xs rounded-xl hover:bg-sky-700 transition-all shadow-md hover:shadow-lg active:scale-[0.99] cursor-pointer flex-shrink-0">
-          Buka Program Selanjutnya & Bersihkan Dashboard
+          Kirim Evaluasi & Lanjutkan Siklus
         </button>
       </div>
     </div>

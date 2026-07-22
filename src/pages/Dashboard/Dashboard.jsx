@@ -107,7 +107,7 @@ const Dashboard = () => {
       const currentDay = dashboardData?.current_plan_day || 1;
 
       if (currentDay === 7 && isAllDone) {
-        toast.success("Selamat! Program 7 Hari Lu Selesai 🎉", {
+        toast.success("Selamat! Program 7 Hari Anda Selesai 🎉", {
           description: "Silakan isi evaluasi mingguan untuk membuka siklus berikutnya.",
           action: {
             label: "Isi Evaluasi",
