@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FiMoreVertical, FiEye, FiCheckCircle, FiAlertCircle, FiInbox } from "react-icons/fi";
+import { Empty, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import JourneyHeader from "../components/JourneyHeader";
 import JourneyStats from "../components/JourneyStats";
 import StatusBadge from "../components/StatusBadge";
-import { weeklyMasterLogs } from "../data/journeyLogsData";
+import { journeyService } from "@/services/journeyLogServices";
 
 // 🌟 IMPORT KEDUA MODAL (Hasil & Formulir Pengisian)
 import FeedbackModal from "@/pages/Dashboard/components/FeedbackModal";
@@ -17,36 +18,67 @@ export default function JourneyListView({ onWeekSelect }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // ─── 🌟 STATE DATA DARI BACKEND ───
+  const [logs, setLogs] = useState([]);
+  const [globalStats, setGlobalStats] = useState({
+    avgCompliance: "0%",
+    completedWeeks: 0,
+    evaluationsNeeded: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
   // ─── 🌟 STATE KONTROL ALUR MODAL ───
-  // State untuk melihat HASIL EVALUASI (Siklus Selesai)
   const [selectedEvalLog, setSelectedEvalLog] = useState(null);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
-  // State untuk MENGISI EVALUASI BARU (Siklus Butuh Evaluasi)
   const [selectedFillLog, setSelectedFillLog] = useState(null);
   const [isFillModalOpen, setIsFillModalOpen] = useState(false);
 
-  const safeLogs = weeklyMasterLogs || [];
+  // ─── 🌟 FETCH DATA SUMMARIES DARI API ───
+  const fetchSummaryLogs = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await journeyService.getSummary();
+      // Mengambil data siklus mingguan dan statistik global dari response backend
+      const data = response?.data || response;
+      const logsList = data?.logs || data?.weeklyLogs || (Array.isArray(data) ? data : []);
+
+      setLogs(logsList);
+      if (data?.stats) {
+        setGlobalStats(data.stats);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data journey log summary:", error);
+      setLogs([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSummaryLogs();
+  }, [fetchSummaryLogs]);
+
+  const safeLogs = logs || [];
   const hasData = safeLogs.length > 0;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = safeLogs.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(safeLogs.length / itemsPerPage);
+  const totalPages = Math.ceil(safeLogs.length / itemsPerPage) || 1;
 
-  // Fungsi callback sukses setelah user berhasil mengisi formulir evaluasi
+  // Callback sukses mengisi evaluasi dari modal
   const handleFillSubmitSuccess = (userData) => {
     console.log("Evaluasi mingguan berhasil disubmit dari Journey Log:", userData);
-
-    // Skenario integrasi BE nanti: di sini lu tembak API POST, lalu refresh data/state lokal
     setIsFillModalOpen(false);
     setSelectedFillLog(null);
+    fetchSummaryLogs(); // Refresh data setelah submit
   };
 
   return (
     <div className="space-y-6 text-left">
       <JourneyHeader title="Log Riwayat Program" subtitle="Catatan harian dari pelaksanaan aktivitas dan misi kesehatan Anda" />
-      <JourneyStats data={safeLogs} isDetailView={false} />
+      <JourneyStats data={safeLogs} isDetailView={false} globalStats={globalStats} />
 
       <div className="card-base border border-border bg-brand-white">
         {/* DESKTOP TABLE */}
@@ -63,7 +95,13 @@ export default function JourneyListView({ onWeekSelect }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {hasData ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-14 text-slate-400 font-medium">
+                    Memuat catatan rekam jejak...
+                  </TableCell>
+                </TableRow>
+              ) : hasData ? (
                 currentItems.map((log) => (
                   <TableRow key={log.id} className="hover:bg-slate-50/60 transition-colors">
                     <TableCell className="font-bold text-brand-secondary">{log.cycle}</TableCell>
@@ -76,7 +114,6 @@ export default function JourneyListView({ onWeekSelect }) {
                       <StatusBadge status={log.status} type="weekly" />
                     </TableCell>
                     <TableCell>
-                      {/* 🌟 MENYAMBUNGKAN EMIT KLIK KE CONTROLLER */}
                       <ActionDropdown
                         status={log.status}
                         onDetail={() => onWeekSelect({ id: log.id, cycle: log.cycle, risk: log.ptmRisk })}
@@ -93,10 +130,15 @@ export default function JourneyListView({ onWeekSelect }) {
                   </TableRow>
                 ))
               ) : (
+                /* 🌟 EMPTY STATE MENGGUNAKAN WRAPPER TABEL SHADCN UI */
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-14 text-slate-400">
+                  <TableCell colSpan={6} className="text-center py-14">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <p className="text-sm font-bold text-slate-400">Belum ada rekaman siklus mingguan.</p>
+                      <div className="p-3 bg-slate-50 rounded-full border border-slate-100 text-slate-400">
+                        <FiInbox size={24} />
+                      </div>
+                      <p className="text-sm font-bold text-slate-500">Belum ada rekaman siklus mingguan.</p>
+                      <p className="text-xs text-slate-400 max-w-sm">Data riwayat pelaksanaan aktivitas dan evaluasi kesehatan Anda akan tampil di sini.</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -107,7 +149,9 @@ export default function JourneyListView({ onWeekSelect }) {
 
         {/* MOBILE CARDS LAYOUT */}
         <div className="block md:hidden space-y-3">
-          {hasData ? (
+          {isLoading ? (
+            <div className="text-center py-10 px-4 text-xs font-semibold text-slate-400">Memuat data...</div>
+          ) : hasData ? (
             currentItems.map((log) => (
               <div key={log.id} className="p-4 rounded-xl border border-border bg-brand-white shadow-3xs space-y-3">
                 <div className="flex items-center justify-between">
@@ -138,11 +182,18 @@ export default function JourneyListView({ onWeekSelect }) {
               </div>
             ))
           ) : (
-            <div className="text-center py-10 px-4 text-slate-400">Belum ada rekaman.</div>
+            /* 🌟 EMPTY STATE MOBILE */
+            <Empty className="py-8 my-auto flex flex-col items-center justify-center text-center">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 text-brand-secondary flex items-center justify-center mb-2">
+                <FiInbox size={24} />
+              </div>
+              <EmptyTitle className="text-sm font-bold text-slate-700">Belum ada rekaman siklus mingguan.</EmptyTitle>
+              <EmptyDescription className="text-xs text-slate-400 max-w-xs">Data riwayat pelaksanaan aktivitas dan evaluasi kesehatan Anda akan tampil di sini.</EmptyDescription>
+            </Empty>
           )}
         </div>
 
-        {/* PAGINATION PANEL (🌟 BALIK FULL UTUH SEPERTI SEMULA, BRO) */}
+        {/* PAGINATION PANEL */}
         {hasData && (
           <div className="flex items-center justify-between pt-4 border-t border-border mt-5">
             <p className="text-xs font-semibold text-slate-400">
@@ -172,7 +223,7 @@ export default function JourneyListView({ onWeekSelect }) {
         )}
       </div>
 
-      {/* ─── 🌟 MODAL JALUR 1: LIHAT HASIL EVALUASI (SIKLUS SELESAI) ─── */}
+      {/* ─── MODAL JALUR 1: LIHAT HASIL EVALUASI ─── */}
       <FeedbackResultModal
         isOpen={isResultModalOpen}
         onClose={() => {
@@ -182,7 +233,7 @@ export default function JourneyListView({ onWeekSelect }) {
         logData={selectedEvalLog}
       />
 
-      {/* ─── 🌟 MODAL JALUR 2: ISI FORM EVALUASI BARU (BUTUH EVALUASI) ─── */}
+      {/* ─── MODAL JALUR 2: ISI FORM EVALUASI BARU ─── */}
       {isFillModalOpen && selectedFillLog && (
         <FeedbackModal
           isOpen={isFillModalOpen}
@@ -193,8 +244,8 @@ export default function JourneyListView({ onWeekSelect }) {
           isDay8CutOff={true}
           onSubmitSuccess={handleFillSubmitSuccess}
           currentWeek={parseInt(selectedFillLog.cycle.replace(/\D/g, "")) || 1}
-          startDate={selectedFillLog.dateRange.split(" - ")[0]}
-          endDate={selectedFillLog.dateRange.split(" - ")[1]}
+          startDate={selectedFillLog.dateRange?.split(" - ")[0] || ""}
+          endDate={selectedFillLog.dateRange?.split(" - ")[1] || ""}
           stats={{
             avgCompliance: parseInt(selectedFillLog.compliance) || 0,
             perfectDays: 0,
@@ -206,7 +257,6 @@ export default function JourneyListView({ onWeekSelect }) {
   );
 }
 
-// ─── 🌟 UPGRADE DROPDOWN AKSI AGAR MENAMPUNG KEDUA CONDITIONAL EVENT ───
 function ActionDropdown({ status, onDetail, onOpenResult, onOpenFill }) {
   return (
     <DropdownMenu>
@@ -220,14 +270,12 @@ function ActionDropdown({ status, onDetail, onOpenResult, onOpenFill }) {
           <FiEye size={14} /> Lihat Detail
         </DropdownMenuItem>
 
-        {/* JALUR HANYA UNTUK STATUS SELESAI */}
         {status === "Selesai" && (
           <DropdownMenuItem onClick={onOpenResult} className="flex items-center gap-2 text-xs font-bold text-brand-success cursor-pointer rounded-lg px-3 py-2 focus:bg-emerald-50 focus:text-brand-success">
             <FiCheckCircle size={14} /> Hasil Evaluasi
           </DropdownMenuItem>
         )}
 
-        {/* JALUR HANYA UNTUK STATUS BUTUH EVALUASI */}
         {status === "Butuh Evaluasi" && (
           <DropdownMenuItem onClick={onOpenFill} className="flex items-center gap-2 text-xs font-bold text-[#d97706] cursor-pointer rounded-lg px-3 py-2 focus:bg-amber-50 focus:text-[#d97706]">
             <FiAlertCircle size={14} /> Isi Evaluasi
