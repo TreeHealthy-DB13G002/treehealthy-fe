@@ -74,8 +74,8 @@ const Sidebar = ({ isCollapsed, isMobileOpen, closeSidebar }) => {
             <img src={logoApp} alt="TreeHealthy" className="h-9 w-9 object-contain" />
             {(!isCollapsed || isMobileOpen) && (
               <div>
-                <h1 className="text-md font-bold text-sky-600 leading-none pt-1">TreeHealthy</h1>
-                <p className="text-xs text-slate-500 mt-0.5">AI Health Planner</p>
+                <h1 className="text-md font-bold text-brand-secondary leading-none pt-1">TreeHealthy</h1>
+                <p className="text-xs font-semibold text-brand-text mt-0.5">AI Health Planner</p>
               </div>
             )}
           </div>
