@@ -1,5 +1,6 @@
 import React from "react";
 import PersonalForm from "./PersonalForm";
+import { formatTimeAgo } from "@/utils/dateFormatter";
 
 const ProfileCard = ({ initialData, onRefresh }) => {
   const getInitial = (name) => {
@@ -19,8 +20,9 @@ const ProfileCard = ({ initialData, onRefresh }) => {
             <p className="text-xs text-slate-400">Lengkapi data fisik dasar Anda sebelum memulai survei penilaian risiko kesehatan.</p>
           </div>
         </div>
+
         <div className="text-left sm:text-right">
-          <span className="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">Terakhir diperbarui: Baru saja</span>
+          <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">Terakhir diperbarui: {formatTimeAgo(initialData?.last_update)}</span>
         </div>
       </div>
 
