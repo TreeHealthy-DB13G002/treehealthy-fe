@@ -1,7 +1,6 @@
 import { FiActivity, FiZap, FiCalendar } from "react-icons/fi";
 
 const StatsCard = ({ variant, value, label, subtext, progress, className = "", onClick, isClickable = false }) => {
-  // 🌟 FIX: Safety check untuk mengantisipasi nilai null/undefined dari BE
   const isValueEmpty = value === "--" || value === undefined || value === null;
   const numericValue = isValueEmpty ? 0 : parseFloat(String(value).replace("%", "")) || 0;
 

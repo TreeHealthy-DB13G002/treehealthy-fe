@@ -1,10 +1,8 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { FiTrendingUp } from "react-icons/fi";
-// 🚨 Sesuaikan path import komponen Empty sesuai struktur folder lu:
 import { Empty, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 
 export default function PTMRiskChart({ filteredData = [] }) {
-  // Parsing nilai dengan fallback agar fleksibel terhadap key dari BE (score/value)
   const formattedData = filteredData.map((item) => ({
     week: item.week || item.label || "W1",
     score: item.score ?? item.value ?? 0,

@@ -4,7 +4,6 @@ import treeWilted from "@/assets/images/tree-wilted.png";
 const HealthCharacterCard = ({ currentProgress = 0, treeHealth = "healthy" }) => {
   const displayPercentage = Math.round(currentProgress);
 
-  // Cek kesehatan dari prop treeHealth BE atau persentase
   const isHealthy = treeHealth === "healthy" || treeHealth === "segar" || displayPercentage >= 50;
 
   return (

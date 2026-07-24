@@ -80,6 +80,8 @@ Buka browser Anda di http://localhost:5173 (atau port yang tertera pada terminal
 | `npm run preview` | Mempratinjau hasil _build_ produksi secara lokal.                |
 | `npm run lint`    | Mengecek _code quality_ dan aturan sintaks JavaScript/React.     |
 
+---
+
 ## 📌 Fitur Utama Aplikasi
 
 - **Health Assessment (Kuesioner CERDIK):** Penilaian risiko PTM berbasis standar kesehatan masyarakat.

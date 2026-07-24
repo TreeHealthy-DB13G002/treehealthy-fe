@@ -12,7 +12,6 @@ const Settings = () => {
     try {
       setIsLoading(true);
       const response = await userService.getProfile();
-      // Mengambil objek utama data dari response interceptor
       const userData = response.data || response;
       setProfileData(userData);
     } catch (error) {

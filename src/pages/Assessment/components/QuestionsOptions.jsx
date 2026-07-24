@@ -18,7 +18,6 @@ const QuestionOptions = ({ options = [], value, onChange }) => {
             `}
           >
             <div className="flex items-center gap-3 w-full">
-              {/* Radio Indicator */}
               <div
                 className={`
                   h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-all duration-200
@@ -28,10 +27,9 @@ const QuestionOptions = ({ options = [], value, onChange }) => {
                 {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
               </div>
 
-              {/* Teks Pilihan Jawaban */}
               <span className="leading-snug flex items-center flex-1 w-full min-w-0 py-0.5">
                 {option.emoji && <span className="mr-2 text-base shrink-0">{option.emoji}</span>}
-                {/* 🚀 FIX: Mengubah option.label menjadi option.option_text sesuai response Swagger Backend */}
+
                 <span className="block text-left text-xs md:text-sm whitespace-normal break-words w-full">{option.option_text}</span>
               </span>
             </div>

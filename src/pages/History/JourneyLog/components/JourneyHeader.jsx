@@ -4,13 +4,11 @@ import { FiArrowLeft } from "react-icons/fi";
 export default function JourneyHeader({ title, subtitle, showBackButton, onBack }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 text-left w-full">
-      {/* Sisi Kiri: Judul & Subtitle (Posisinya dikunci) */}
       <div className="flex-1 min-w-0">
         <h1 className="text-3xl font-bold text-[#0f172a] tracking-tight truncate">{title}</h1>
         <p className="text-sm font-medium text-slate-500 mt-1 line-clamp-2 sm:line-clamp-1">{subtitle}</p>
       </div>
 
-      {/* Sisi Kanan: Tombol Back (Hanya muncul jika showBackButton true) */}
       {showBackButton && (
         <Button
           variant="default"
