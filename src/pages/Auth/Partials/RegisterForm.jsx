@@ -54,7 +54,6 @@ const RegisterForm = () => {
       </div>
 
       <form className="space-y-4" onSubmit={handleRegister}>
-        {/* 🌟 Hapus Box manual ijo/merah */}
         <div className="space-y-2">
           <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-brand-secondary">
             Full Name

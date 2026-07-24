@@ -1,10 +1,6 @@
 import axiosClient from "../lib/axiosClient";
 
 export const assessmentService = {
-  /**
-   * 1. Kirim Data Fisik & Medis Dasar
-   * @param {Object} profileData - { age, gender, height, weight, activityLevel, familyHistory }
-   */
   saveProfile: async (profileData) => {
     try {
       const response = await axiosClient.post("/assessment/profile", profileData);
@@ -14,9 +10,6 @@ export const assessmentService = {
     }
   },
 
-  /**
-   * 2. Ambil 11 Daftar Pertanyaan Kuis dari Database
-   */
   getQuestions: async () => {
     try {
       const response = await axiosClient.get("/assessment/questions");
@@ -26,10 +19,6 @@ export const assessmentService = {
     }
   },
 
-  /**
-   * 3. Kirim Seluruh Jawaban Kuis untuk Kalkulasi Skor 4 Pilar Medis
-   * @param {Object} answersData - Paket data jawaban kuis sesuai kontrak BE/AI
-   */
   submitAnswers: async (answersData) => {
     try {
       const response = await axiosClient.post("/assessment/submit", answersData);
@@ -39,9 +28,6 @@ export const assessmentService = {
     }
   },
 
-  /**
-   * 4. Mengaktifkan siklus rencana sehat harian pengguna (Buatkan Program Sehat)
-   */
   generatePlan: async () => {
     try {
       const response = await axiosClient.post("/assessment/generate-plan");

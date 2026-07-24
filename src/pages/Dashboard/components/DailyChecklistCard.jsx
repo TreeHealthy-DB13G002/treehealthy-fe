@@ -18,7 +18,6 @@ const DailyChecklistCard = ({ tasks = [], onToggleTask, currentPlanDay = 1, isLo
       </div>
 
       <div className="space-y-3 min-h-[220px] max-h-[270px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent flex-1 flex flex-col justify-center" style={{ scrollBehavior: "smooth" }}>
-        {/* 1️⃣ KONDISI LOADING */}
         {isLoading ? (
           <Empty className="py-8 my-auto flex flex-col items-center justify-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-2">
@@ -28,7 +27,6 @@ const DailyChecklistCard = ({ tasks = [], onToggleTask, currentPlanDay = 1, isLo
             <EmptyDescription className="text-xs text-slate-400 max-w-xs">Tunggu sebentar, AI sedang merancang dan memuat tugas kesehatan Anda.</EmptyDescription>
           </Empty>
         ) : isError ? (
-          /* 2️⃣ KONDISI ERROR / GAGAL FETCH */
           <Empty className="py-8 my-auto flex flex-col items-center justify-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mb-2">
               <FiAlertCircle size={24} />
@@ -42,7 +40,6 @@ const DailyChecklistCard = ({ tasks = [], onToggleTask, currentPlanDay = 1, isLo
             )}
           </Empty>
         ) : tasks.length === 0 ? (
-          /* 3️⃣ KONDISI DATA KOSONG REAL */
           <Empty className="py-8 my-auto flex flex-col items-center justify-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-slate-100 text-brand-secondary flex items-center justify-center mb-2">
               <FiInbox size={24} />
@@ -51,7 +48,6 @@ const DailyChecklistCard = ({ tasks = [], onToggleTask, currentPlanDay = 1, isLo
             <EmptyDescription className="text-xs text-slate-400 max-w-xs">Semua checklist harian belum tersedia atau telah selesai dikerjakan.</EmptyDescription>
           </Empty>
         ) : (
-          /* 4️⃣ LIST CHECKLIST */
           tasks.map((task) => <ChecklistItem key={task.id} title={task.title || task.name} status={task.status || (task.is_completed ? "completed" : "in_progress")} description={task.description} onCheck={() => onToggleTask(task.id)} />)
         )}
       </div>

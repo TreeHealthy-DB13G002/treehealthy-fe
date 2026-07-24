@@ -6,7 +6,6 @@ import JourneyStats from "../components/JourneyStats";
 import StatusBadge from "../components/StatusBadge";
 import { journeyService } from "@/services/journeyLogServices";
 
-// 🌟 IMPORT KEDUA MODAL (Hasil & Formulir Pengisian)
 import FeedbackModal from "@/pages/Dashboard/components/FeedbackModal";
 import FeedbackResultModal from "../components/FeedbackResultModal";
 
@@ -18,7 +17,6 @@ export default function JourneyListView({ onWeekSelect }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // ─── 🌟 STATE DATA DARI BACKEND ───
   const [logs, setLogs] = useState([]);
   const [globalStats, setGlobalStats] = useState({
     avgCompliance: "0%",
@@ -27,19 +25,17 @@ export default function JourneyListView({ onWeekSelect }) {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // ─── 🌟 STATE KONTROL ALUR MODAL ───
   const [selectedEvalLog, setSelectedEvalLog] = useState(null);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
   const [selectedFillLog, setSelectedFillLog] = useState(null);
   const [isFillModalOpen, setIsFillModalOpen] = useState(false);
 
-  // ─── 🌟 FETCH DATA SUMMARIES DARI API ───
   const fetchSummaryLogs = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await journeyService.getSummary();
-      // Mengambil data siklus mingguan dan statistik global dari response backend
+
       const data = response?.data || response;
       const logsList = data?.logs || data?.weeklyLogs || (Array.isArray(data) ? data : []);
 
@@ -67,12 +63,11 @@ export default function JourneyListView({ onWeekSelect }) {
   const currentItems = safeLogs.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(safeLogs.length / itemsPerPage) || 1;
 
-  // Callback sukses mengisi evaluasi dari modal
   const handleFillSubmitSuccess = (userData) => {
     console.log("Evaluasi mingguan berhasil disubmit dari Journey Log:", userData);
     setIsFillModalOpen(false);
     setSelectedFillLog(null);
-    fetchSummaryLogs(); // Refresh data setelah submit
+    fetchSummaryLogs();
   };
 
   return (
@@ -81,7 +76,6 @@ export default function JourneyListView({ onWeekSelect }) {
       <JourneyStats data={safeLogs} isDetailView={false} globalStats={globalStats} />
 
       <div className="card-base border border-border bg-brand-white">
-        {/* DESKTOP TABLE */}
         <div className="hidden md:block rounded-xl border border-border overflow-hidden">
           <Table>
             <TableHeader className="bg-brand-bg">
@@ -130,7 +124,6 @@ export default function JourneyListView({ onWeekSelect }) {
                   </TableRow>
                 ))
               ) : (
-                /* 🌟 EMPTY STATE MENGGUNAKAN WRAPPER TABEL SHADCN UI */
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-14">
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -147,7 +140,6 @@ export default function JourneyListView({ onWeekSelect }) {
           </Table>
         </div>
 
-        {/* MOBILE CARDS LAYOUT */}
         <div className="block md:hidden space-y-3">
           {isLoading ? (
             <div className="text-center py-10 px-4 text-xs font-semibold text-slate-400">Memuat data...</div>
@@ -182,7 +174,6 @@ export default function JourneyListView({ onWeekSelect }) {
               </div>
             ))
           ) : (
-            /* 🌟 EMPTY STATE MOBILE */
             <Empty className="py-8 my-auto flex flex-col items-center justify-center text-center">
               <div className="w-12 h-12 rounded-2xl bg-slate-100 text-brand-secondary flex items-center justify-center mb-2">
                 <FiInbox size={24} />
@@ -193,7 +184,6 @@ export default function JourneyListView({ onWeekSelect }) {
           )}
         </div>
 
-        {/* PAGINATION PANEL */}
         {hasData && (
           <div className="flex items-center justify-between pt-4 border-t border-border mt-5">
             <p className="text-xs font-semibold text-slate-400">
@@ -223,7 +213,6 @@ export default function JourneyListView({ onWeekSelect }) {
         )}
       </div>
 
-      {/* ─── MODAL JALUR 1: LIHAT HASIL EVALUASI ─── */}
       <FeedbackResultModal
         isOpen={isResultModalOpen}
         onClose={() => {
@@ -233,7 +222,6 @@ export default function JourneyListView({ onWeekSelect }) {
         logData={selectedEvalLog}
       />
 
-      {/* ─── MODAL JALUR 2: ISI FORM EVALUASI BARU ─── */}
       {isFillModalOpen && selectedFillLog && (
         <FeedbackModal
           isOpen={isFillModalOpen}

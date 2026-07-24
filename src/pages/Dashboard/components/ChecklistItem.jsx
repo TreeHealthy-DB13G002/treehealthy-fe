@@ -19,12 +19,11 @@ const labels = {
 };
 
 const ChecklistItem = ({ title, status, description, onCheck }) => {
-  // 🌟 FIX: Normalisasi status agar mendukung format String ("completed") maupun Boolean (is_completed: true)
   let normalizedStatus = status;
   if (typeof status === "boolean") {
     normalizedStatus = status ? "completed" : "in_progress";
   } else if (!colors[status]) {
-    normalizedStatus = "in_progress"; // Fallback aman
+    normalizedStatus = "in_progress";
   }
 
   return (

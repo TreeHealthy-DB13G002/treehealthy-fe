@@ -10,7 +10,6 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
   const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ─── 🌟 FETCH DETAIL DAILY LOGS DARI API ───
   useEffect(() => {
     async function fetchDetailLogs() {
       setIsLoading(true);
@@ -38,7 +37,6 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
       <JourneyStats data={logs} isDetailView={true} weekRisk={weekRisk} />
 
       <div className="card-base border border-border bg-brand-white">
-        {/* DESKTOP TABLE WITH ADAPTIVE 7/8 TASK INDICATORS */}
         <div className="hidden md:block rounded-xl border border-border overflow-hidden">
           <Table>
             <TableHeader className="bg-brand-bg">
@@ -88,7 +86,6 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
                   );
                 })
               ) : (
-                /* 🌟 EMPTY STATE DENGAN TABLE CELL WRAPPER SHADCN UI */
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-12">
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -104,7 +101,6 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
           </Table>
         </div>
 
-        {/* MOBILE CARDS LAYOUT */}
         <div className="block md:hidden space-y-3">
           {isLoading ? (
             <p className="text-center py-4 text-xs font-semibold text-slate-400">Memuat rincian...</p>
@@ -134,7 +130,6 @@ export default function JourneyDetailView({ weekId, weekName, weekRisk, onBack }
               );
             })
           ) : (
-            /* 🌟 EMPTY STATE MOBILE */
             <div className="text-center py-8 px-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50 space-y-1">
               <FiInbox className="mx-auto h-5 w-5 text-slate-300" />
               <p className="text-xs font-bold text-slate-400">Belum ada rekaman harian.</p>

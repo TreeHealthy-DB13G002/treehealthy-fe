@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +23,7 @@ const formSchema = z.object({
 });
 
 const PTM_OPTIONS = [
-  { id: "hypertension", label: "Hipertensi (Darah Tinggi)" }, // Disamakan dengan id assessment
+  { id: "hypertension", label: "Hipertensi (Darah Tinggi)" },
   { id: "diabetes", label: "Diabetes (Kencing Manis)" },
   { id: "heart_disease", label: "Penyakit Jantung Kronis" },
 ];
@@ -51,7 +50,6 @@ const PersonalForm = ({ initialData, onSuccess }) => {
     },
   });
 
-  // 🚀 PRE-FILL DATA DARI BE KE INTERNAL FORM FE
   useEffect(() => {
     if (initialData) {
       reset({
@@ -103,7 +101,6 @@ const PersonalForm = ({ initialData, onSuccess }) => {
     }
   };
 
-  // 🚀 SIMPAN PERUBAHAN KE BE
   const onSubmit = (values) => {
     const payload = {
       fullname: values.fullName,
@@ -119,7 +116,7 @@ const PersonalForm = ({ initialData, onSuccess }) => {
     toast.promise(userService.updateProfile(payload), {
       loading: "Menyimpan perubahan profil...",
       success: () => {
-        if (onSuccess) onSuccess(); // Ambil ulang data terbaru dari BE
+        if (onSuccess) onSuccess();
         return "Profil Anda berhasil diperbarui!";
       },
       error: (err) => {

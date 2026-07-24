@@ -13,7 +13,6 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  // State Utama Integrasi Backend
   const [dashboardData, setDashboardData] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -26,7 +25,6 @@ const Dashboard = () => {
     return "Selamat Malam";
   };
 
-  // Fetch Data Dashboard dari API Real
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
@@ -64,7 +62,6 @@ const Dashboard = () => {
     updateDateTime();
     const interval = setInterval(updateDateTime, 60000);
 
-    // Fetch User Profile
     userService
       .getProfile()
       .then((res) => {
@@ -78,10 +75,8 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Handler Toggle Task (Dioper ke DailyChecklistCard)
   const handleToggleTask = async (taskId) => {
     try {
-      // Optimistic UI Update
       const updatedTasks = tasks.map((t) => {
         if (t.id === taskId) {
           const newStatus = t.status === "completed" ? "in_progress" : "completed";
@@ -92,16 +87,13 @@ const Dashboard = () => {
 
       setTasks(updatedTasks);
 
-      // Tembak API Patch Toggle
       const res = await dashboardService.toggleTask(taskId);
       const resData = res.data?.data || res.data;
 
-      // Update data pohon jika BE me-return objek status baru
       if (resData?.tree_health) {
         setDashboardData((prev) => ({ ...prev, tree_health: resData.tree_health }));
       }
 
-      // Cek apakah Hari 7 & Semua Task Selesai
       const completedCount = updatedTasks.filter((t) => t.status === "completed").length;
       const isAllDone = completedCount === updatedTasks.length;
       const currentDay = dashboardData?.current_plan_day || 1;
@@ -119,11 +111,10 @@ const Dashboard = () => {
       }
     } catch (error) {
       toast.error("Gagal mengubah status tugas");
-      fetchDashboardData(); // Rollback jika error
+      fetchDashboardData();
     }
   };
 
-  // Handler Submit Evaluasi Mingguan (Complete Cycle)
   const handleFeedbackSubmit = async (feedbackData) => {
     try {
       const payload = {
@@ -135,7 +126,7 @@ const Dashboard = () => {
         loading: "Memproses evaluasi & memperbarui siklus mingguan...",
         success: () => {
           setShowFeedbackModal(false);
-          fetchDashboardData(); // Refetch data dashboard untuk Minggu baru
+          fetchDashboardData();
           return "Siklus baru berhasil dimuat!";
         },
         error: (err) => err.response?.data?.message || "Gagal menyimpan evaluasi.",
@@ -152,7 +143,6 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Dashboard */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-left">
         <div>
           <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
@@ -163,7 +153,6 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {/* Tombol Manual Buka Evaluasi Pas Hari Ke-7 */}
         {currentDay === 7 && (
           <button onClick={() => setShowFeedbackModal(true)} className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-sm animate-bounce self-start sm:self-auto">
             📋 Isi Evaluasi Minggu {calculatedWeek}
@@ -171,10 +160,8 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Komponen Statistik Utama */}
       <DashboardStats checklistProgress={currentProgress} dashboardData={dashboardData} onOpenModal={() => setShowFeedbackModal(true)} />
 
-      {/* Komponen Content Aktivitas & Pohon */}
       <DashboardContent
         tasks={tasks}
         currentProgress={currentProgress}
@@ -186,7 +173,6 @@ const Dashboard = () => {
         onRetry={fetchDashboardData}
       />
 
-      {/* Modal Evaluasi */}
       <FeedbackModal isOpen={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} onSubmitSuccess={handleFeedbackSubmit} currentWeek={calculatedWeek} stats={dashboardData?.weekly_stats} />
     </div>
   );

@@ -6,7 +6,6 @@ const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, stats = {}, onSubmitS
 
   if (!isOpen) return null;
 
-  // Parsing data stats secara aman dari prop
   const compliance = stats?.avg_compliance ?? stats?.avgCompliance ?? stats?.compliance ?? 0;
   const perfectDays = stats?.perfect_days ?? stats?.perfectDays ?? 0;
   const doneTasks = stats?.done_tasks ?? stats?.doneTasks ?? 0;
@@ -21,7 +20,6 @@ const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, stats = {}, onSubmitS
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100 flex flex-col space-y-5 text-left transform duration-300">
-        {/* Header Modal */}
         <div className="flex justify-between items-start flex-shrink-0">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
@@ -34,7 +32,6 @@ const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, stats = {}, onSubmitS
           </button>
         </div>
 
-        {/* ─── METRIC GRID SINKRON (3 KOLOM KONSISTEN) ─── */}
         <div className="grid grid-cols-3 gap-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100 text-center flex-shrink-0">
           <div>
             <div className="text-xl sm:text-2xl font-black text-brand-secondary">{compliance}%</div>

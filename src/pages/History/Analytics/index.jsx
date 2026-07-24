@@ -11,7 +11,6 @@ export default function HealthAnalytics() {
   const [timeRange, setTimeRange] = useState("8-weeks");
   const [isLoading, setIsLoading] = useState(true);
 
-  // State Data dari Backend
   const [ptmRiskData, setPtmRiskData] = useState([]);
   const [complianceData, setComplianceData] = useState([]);
 
@@ -22,8 +21,6 @@ export default function HealthAnalytics() {
         const response = await analyticsService.getCharts();
         const data = response.data?.data || response.data || {};
 
-        // BE biasanya me-return { ptm_risk: [...], compliance: [...] }
-        // atau array berformat { week, score, compliance }
         setPtmRiskData(data.ptm_risk || data.risk_trends || []);
         setComplianceData(data.compliance || data.compliance_trends || []);
       } catch (error) {
@@ -45,16 +42,14 @@ export default function HealthAnalytics() {
 
   const limit = getLimit();
 
-  // ─── 🌟 KALKULASI DINAMIS BERDASARKAN FILTER WAKTU ───
   const currentRiskData = ptmRiskData.slice(-limit);
   const currentComplianceData = complianceData.slice(-limit);
 
-  // 1. Hitung Perbaikan Risiko PTM (% Penurunan dari awal range ke akhir range)
   let riskBadgeText = "Tidak ada data";
   if (currentRiskData.length > 1) {
     const firstScore = currentRiskData[0].score ?? currentRiskData[0].value ?? 0;
     const lastScore = currentRiskData[currentRiskData.length - 1].score ?? currentRiskData[currentRiskData.length - 1].value ?? 0;
-    const improvement = firstScore - lastScore; // Positif berarti risiko turun (bagus)
+    const improvement = firstScore - lastScore;
 
     if (improvement > 0) {
       riskBadgeText = `Perbaikan ${improvement}%`;
@@ -67,7 +62,6 @@ export default function HealthAnalytics() {
     riskBadgeText = `Skor: ${currentRiskData[0].score ?? currentRiskData[0].value ?? 0}%`;
   }
 
-  // 2. Hitung Rata-rata Kepatuhan Tugas Harian
   let avgComplianceText = "Avg: 0%";
   if (currentComplianceData.length > 0) {
     const total = currentComplianceData.reduce((sum, item) => sum + (item.compliance ?? item.score ?? item.value ?? 0), 0);
@@ -89,12 +83,10 @@ export default function HealthAnalytics() {
       <AnalyticsHeader timeRange={timeRange} onTimeRangeChange={setTimeRange} />
 
       <div className="space-y-6">
-        {/* Chart 1: Tren Risiko PTM */}
         <ChartCard title="Tren Skor Risiko PTM" subtitle="Fluktuasi mingguan dari persentase risiko komposit PTM Anda" badgeText={riskBadgeText} badgeType="success">
           <PTMRiskChart filteredData={currentRiskData} />
         </ChartCard>
 
-        {/* Chart 2: Kepatuhan Tugas */}
         <ChartCard title="Tingkat Kepatuhan Aktivitas Sehat" subtitle="Persentase penyelesaian mingguan dari target ceklis harian Anda" badgeText={avgComplianceText} badgeType="info">
           <RecommendationComplianceChart limit={limit} filteredData={currentComplianceData} />
         </ChartCard>

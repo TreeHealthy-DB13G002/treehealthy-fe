@@ -9,7 +9,6 @@ const AssessmentResult = ({ apiData }) => {
   const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // 🚀 Ambil data dari API atau gunakan fallback jika data belum termuat sempurna
   const targetPrediction = apiData?.final_risk_score || 0;
   const circumference = 2 * Math.PI * 54;
 
@@ -17,7 +16,6 @@ const AssessmentResult = ({ apiData }) => {
   const [strokeDashoffset, setStrokeDashoffset] = useState(circumference);
   const hasAnimated = useRef(false);
 
-  // Mapping 3 Pilar Medis untuk Progress Bar Kiri bawah
   const healthCategories = [
     { key: "physical", label: "Physical Health", score: apiData?.physical_health_score || 0 },
     { key: "lifestyle", label: "Lifestyle habits", score: apiData?.lifestyle_score || 0 },
@@ -92,7 +90,6 @@ const AssessmentResult = ({ apiData }) => {
     return () => clearTimeout(timer);
   }, [targetPrediction, circumference]);
 
-  // 🚀 HANDLER UNTUK GENERATE PLAN & REDIRECT DASHBOARD
   const handleGeneratePlan = async () => {
     setIsGenerating(true);
 
@@ -114,7 +111,6 @@ const AssessmentResult = ({ apiData }) => {
     <AssessmentCard>
       <div className="flex flex-col h-full">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
-          {/* Sisi Kiri: Skor Utama & Bar */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col">
             <h3 className="font-bold text-sm uppercase tracking-wider text-brand-secondary text-center mb-6">Health Assessment Result</h3>
 
@@ -160,7 +156,6 @@ const AssessmentResult = ({ apiData }) => {
             </div>
           </div>
 
-          {/* Sisi Kanan: AI Health Explanation */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 flex flex-col h-[430px]">
             <h3 className="font-bold text-sm uppercase tracking-wider text-brand-secondary mb-4 flex-shrink-0">AI Health Explanation</h3>
             <div className="flex-1 overflow-y-auto pr-2 text-sm leading-relaxed text-brand-text font-medium whitespace-pre-line space-y-4">
@@ -169,7 +164,6 @@ const AssessmentResult = ({ apiData }) => {
           </div>
         </div>
 
-        {/* 🚀 TOMBOL UTAMA */}
         <div className="mt-8">
           <button
             onClick={handleGeneratePlan}
