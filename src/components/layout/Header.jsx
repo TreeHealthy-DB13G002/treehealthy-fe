@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiClock, FiLogOut, FiMenu } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Header = ({ toggleSidebar }) => {
   const navigate = useNavigate();
@@ -25,6 +26,12 @@ const Header = ({ toggleSidebar }) => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.clear();
+
+    toast.success("Logout Berhasil.", {
+      description: "Anda telah keluar dari akun TreeHealthy.",
+      duration: 3000,
+    });
+
     navigate("/login");
   };
 
