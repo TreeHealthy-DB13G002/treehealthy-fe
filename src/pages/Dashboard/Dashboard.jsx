@@ -33,8 +33,22 @@ const Dashboard = () => {
       const data = response.data?.data || response.data;
 
       if (data) {
-        setDashboardData(data);
-        setTasks(data.tasks || []);
+        const rawRisk = data.ptmRiskScore ? parseFloat(String(data.ptmRiskScore).replace("%", "")) : null;
+
+        const rawDay = data.planDay ? parseInt(String(data.planDay).replace(/\D/g, "")) : 1;
+
+        const normalizedData = {
+          ...data,
+          ptm_risk_score: rawRisk ?? data.ptm_risk_score ?? null,
+          current_plan_day: rawDay || data.current_plan_day || 1,
+          total_plan_days: data.total_plan_days || 7,
+          streak_days: data.streakCount ?? data.streak_days ?? 0,
+          tree_health: data.progressTree || data.tree_health || "healthy",
+        };
+
+        setDashboardData(normalizedData);
+
+        setTasks(data.dailyChecklist || data.tasks || []);
       }
     } catch (error) {
       console.error("Fetch Dashboard Error:", error);
@@ -84,29 +98,17 @@ const Dashboard = () => {
         }
         return t;
       });
-
       setTasks(updatedTasks);
 
       const res = await dashboardService.toggleTask(taskId);
-      const resData = res.data?.data || res.data;
 
-      if (resData?.tree_health) {
-        setDashboardData((prev) => ({ ...prev, tree_health: resData.tree_health }));
-      }
+      await fetchDashboardData();
 
       const completedCount = updatedTasks.filter((t) => t.status === "completed").length;
       const isAllDone = completedCount === updatedTasks.length;
       const currentDay = dashboardData?.current_plan_day || 1;
 
       if (currentDay === 7 && isAllDone) {
-        toast.success("Selamat! Program 7 Hari Anda Selesai 🎉", {
-          description: "Silakan isi evaluasi mingguan untuk membuka siklus berikutnya.",
-          action: {
-            label: "Isi Evaluasi",
-            onClick: () => setShowFeedbackModal(true),
-          },
-          duration: 6000,
-        });
         setShowFeedbackModal(true);
       }
     } catch (error) {
