@@ -34,7 +34,6 @@ const Dashboard = () => {
 
       if (data) {
         const rawRisk = data.ptmRiskScore ? parseFloat(String(data.ptmRiskScore).replace("%", "")) : null;
-
         const rawDay = data.planDay ? parseInt(String(data.planDay).replace(/\D/g, "")) : 1;
 
         const normalizedData = {
@@ -47,7 +46,6 @@ const Dashboard = () => {
         };
 
         setDashboardData(normalizedData);
-
         setTasks(data.dailyChecklist || data.tasks || []);
       }
     } catch (error) {
@@ -89,6 +87,31 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const getMsUntilMidnight = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0);
+      return midnight.getTime() - now.getTime();
+    };
+
+    const midnightTimer = setTimeout(() => {
+      toast.info("Hari baru telah dimulai! Memuat tugas hari ini...", { duration: 4000 });
+      fetchDashboardData();
+    }, getMsUntilMidnight());
+
+    const handleFocus = () => {
+      fetchDashboardData();
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      clearTimeout(midnightTimer);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
+
   const handleToggleTask = async (taskId) => {
     try {
       const updatedTasks = tasks.map((t) => {
@@ -100,8 +123,7 @@ const Dashboard = () => {
       });
       setTasks(updatedTasks);
 
-      const res = await dashboardService.toggleTask(taskId);
-
+      await dashboardService.toggleTask(taskId);
       await fetchDashboardData();
 
       const completedCount = updatedTasks.filter((t) => t.status === "completed").length;
