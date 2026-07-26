@@ -1,15 +1,40 @@
-import { useState } from "react";
-import { FiX } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { FiX, FiLoader } from "react-icons/fi";
+import { dashboardService } from "@/services/dashboardServices";
 
-const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, stats = {}, onSubmitSuccess }) => {
+const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, onSubmitSuccess }) => {
   const [reflection, setReflection] = useState("");
+  const [statsData, setStatsData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchWeeklyStats = async () => {
+        try {
+          setIsLoading(true);
+          const response = await dashboardService.getWeeklyStats();
+          const data = response.data?.data || response.data;
+          setStatsData(data);
+        } catch (error) {
+          console.error("Gagal memuat statistik evaluasi mingguan:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchWeeklyStats();
+    } else {
+      setReflection("");
+      setStatsData(null);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const compliance = stats?.avg_compliance ?? stats?.avgCompliance ?? stats?.compliance ?? 0;
-  const perfectDays = stats?.perfect_days ?? stats?.perfectDays ?? 0;
-  const doneTasks = stats?.done_tasks ?? stats?.doneTasks ?? 0;
-  const totalTasks = stats?.total_tasks ?? stats?.totalTasks ?? 0;
+  const compliance = statsData?.avg_compliance ?? 0;
+  const perfectDays = statsData?.perfect_days ?? 0;
+  const doneTasks = statsData?.done_tasks ?? 0;
+  const totalTasks = statsData?.total_tasks ?? 0;
 
   const handleSubmit = () => {
     if (onSubmitSuccess) {
@@ -32,26 +57,34 @@ const FeedbackModal = ({ isOpen, onClose, currentWeek = 1, stats = {}, onSubmitS
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100 text-center flex-shrink-0">
-          <div>
-            <div className="text-xl sm:text-2xl font-black text-brand-secondary">{compliance}%</div>
-            <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Rasio Kepatuhan</div>
-          </div>
-
-          <div className="border-x border-slate-200">
-            <div className="text-xl sm:text-2xl font-black text-brand-secondary">{perfectDays}</div>
-            <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Hari Sempurna</div>
-          </div>
-
-          <div>
-            <div className="text-xl sm:text-2xl font-black text-brand-secondary">
-              {doneTasks} <span className="text-xs font-bold text-slate-400">/ {totalTasks}</span>
+        <div className="grid grid-cols-3 gap-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100 text-center flex-shrink-0 min-h-[76px] items-center">
+          {isLoading ? (
+            <div className="col-span-3 flex items-center justify-center gap-2 text-xs font-semibold text-slate-400 py-1">
+              <FiLoader className="animate-spin text-sky-500" size={16} />
+              Memuat statistik 7 hari...
             </div>
-            <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Tugas Selesai</div>
-          </div>
+          ) : (
+            <>
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-brand-secondary">{compliance}%</div>
+                <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Rasio Kepatuhan</div>
+              </div>
+
+              <div className="border-x border-slate-200">
+                <div className="text-xl sm:text-2xl font-black text-brand-secondary">{perfectDays}</div>
+                <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Hari Sempurna</div>
+              </div>
+
+              <div>
+                <div className="text-xl sm:text-2xl font-black text-brand-secondary">
+                  {doneTasks} <span className="text-xs font-bold text-slate-400">/ {totalTasks}</span>
+                </div>
+                <div className="text-[10px] font-bold text-brand-primary uppercase tracking-wide mt-0.5">Tugas Selesai</div>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Textarea Refleksi */}
         <div className="space-y-1.5 flex-1 flex flex-col">
           <label className="text-xs font-bold text-slate-700 block">Refleksi Mingguan</label>
           <textarea

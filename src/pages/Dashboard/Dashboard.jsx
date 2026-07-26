@@ -112,6 +112,12 @@ const Dashboard = () => {
     };
   }, []);
 
+  const currentDay = dashboardData?.current_plan_day || 1;
+  const calculatedWeek = dashboardData?.current_week || Math.ceil(currentDay / 7) || 1;
+  const completedCount = tasks.filter((t) => t.status === "completed").length;
+  const isAllTasksCompleted = tasks.length > 0 && completedCount === tasks.length;
+  const currentProgress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
+
   const handleToggleTask = async (taskId) => {
     try {
       const updatedTasks = tasks.map((t) => {
@@ -126,12 +132,18 @@ const Dashboard = () => {
       await dashboardService.toggleTask(taskId);
       await fetchDashboardData();
 
-      const completedCount = updatedTasks.filter((t) => t.status === "completed").length;
-      const isAllDone = completedCount === updatedTasks.length;
-      const currentDay = dashboardData?.current_plan_day || 1;
+      const newCompletedCount = updatedTasks.filter((t) => t.status === "completed").length;
+      const isNowAllDone = updatedTasks.length > 0 && newCompletedCount === updatedTasks.length;
 
-      if (currentDay === 7 && isAllDone) {
-        setShowFeedbackModal(true);
+      if (currentDay === 7 && isNowAllDone) {
+        toast.success("Selamat! Program 7 Hari Selesai 🎉", {
+          description: "Kamu telah menyelesaikan semua tugas kesehatan minggu ini.",
+          duration: 6000,
+          action: {
+            label: "Isi Evaluasi",
+            onClick: () => setShowFeedbackModal(true),
+          },
+        });
       }
     } catch (error) {
       toast.error("Gagal mengubah status tugas");
@@ -142,8 +154,8 @@ const Dashboard = () => {
   const handleFeedbackSubmit = async (feedbackData) => {
     try {
       const payload = {
-        reflection: feedbackData.reflection,
-        week: calculatedWeek,
+        notes: feedbackData.reflection,
+        current_week: calculatedWeek,
       };
 
       toast.promise(dashboardService.completeCycle(payload), {
@@ -160,16 +172,11 @@ const Dashboard = () => {
     }
   };
 
-  const currentDay = dashboardData?.current_plan_day || 1;
-  const calculatedWeek = dashboardData?.current_week || Math.ceil(currentDay / 7) || 1;
-  const completedCount = tasks.filter((t) => t.status === "completed").length;
-  const currentProgress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-left">
+      <div className="flex flex-col justify-between gap-4 text-left sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-800">
             {greeting}, {fullname}!
           </h1>
           <p className="mt-1 text-sm font-medium text-slate-500">
@@ -177,14 +184,17 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {currentDay === 7 && (
-          <button onClick={() => setShowFeedbackModal(true)} className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-sm animate-bounce self-start sm:self-auto">
+        {currentDay === 7 && isAllTasksCompleted && (
+          <button
+            onClick={() => setShowFeedbackModal(true)}
+            className="self-start rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-amber-600 active:scale-95 sm:self-auto cursor-pointer animate-bounce"
+          >
             📋 Isi Evaluasi Minggu {calculatedWeek}
           </button>
         )}
       </div>
 
-      <DashboardStats checklistProgress={currentProgress} dashboardData={dashboardData} onOpenModal={() => setShowFeedbackModal(true)} />
+      <DashboardStats checklistProgress={currentProgress} dashboardData={dashboardData} />
 
       <DashboardContent
         tasks={tasks}
