@@ -27,4 +27,13 @@ export const dashboardService = {
       throw error;
     }
   },
+
+  getWeeklyStats: async () => {
+    try {
+      const response = await axiosClient.get("/dashboard/weekly-stats");
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
