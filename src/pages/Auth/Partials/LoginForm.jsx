@@ -1,45 +1,13 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-
 import PasswordInput from "./PasswordInput";
-import { authService } from "@/services/authServices";
+import { useAuth } from "@/hooks/useAuth";
 
 const LoginForm = () => {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    toast.promise(authService.login(username, password), {
-      loading: "Signing in to your account...",
-      success: (res) => {
-        const hasProfile = res.data?.hasProfile;
-
-        if (hasProfile === false) {
-          navigate("/assessment");
-        } else {
-          navigate("/dashboard");
-        }
-
-        return res.message || "Welcome back to TreeHealthy!";
-      },
-      error: (err) => {
-        setLoading(false);
-        return err.message || "Failed to sign in. Please check your credentials.";
-      },
-      finally: () => setLoading(false),
-    });
-  };
+  const { loginForm, handleLoginChange, handleLogin, loading } = useAuth();
 
   return (
     <div className="space-y-8 w-full max-w-sm mx-auto lg:mx-0">
@@ -53,14 +21,14 @@ const LoginForm = () => {
           <Label htmlFor="username" className="text-xs font-bold uppercase tracking-wider text-brand-secondary">
             Username
           </Label>
-          <Input id="username" type="text" placeholder="Enter your username" className="h-11 rounded-xl border-gray-200" value={username} onChange={(e) => setUsername(e.target.value)} required />
+          <Input id="username" type="text" placeholder="Enter your username" className="h-11 rounded-xl border-gray-200" value={loginForm.username} onChange={handleLoginChange} required />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-brand-secondary">
             Password
           </Label>
-          <PasswordInput id="password" placeholder="Enter your password" className="h-11 rounded-xl border-gray-200" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <PasswordInput id="password" placeholder="Enter your password" className="h-11 rounded-xl border-gray-200" value={loginForm.password} onChange={handleLoginChange} required />
         </div>
 
         <Button type="submit" disabled={loading} className="h-11 w-full bg-brand-primary hover:bg-brand-secondary text-sm font-bold text-white rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer mt-2">
