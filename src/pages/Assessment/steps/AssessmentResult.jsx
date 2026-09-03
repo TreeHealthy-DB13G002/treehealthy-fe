@@ -1,14 +1,8 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { FiLoader } from "react-icons/fi";
 import AssessmentCard from "../components/AssessmentCard";
-import { assessmentService } from "@/services/assessmentServices";
 
-const AssessmentResult = ({ apiData }) => {
-  const navigate = useNavigate();
-  const [isGenerating, setIsGenerating] = useState(false);
-
+const AssessmentResult = ({ apiData, onGeneratePlan, isGenerating }) => {
   const targetPrediction = apiData?.final_risk_score || 0;
   const circumference = 2 * Math.PI * 54;
 
@@ -23,7 +17,7 @@ const AssessmentResult = ({ apiData }) => {
   ];
 
   const getRiskDetails = (score) => {
-    if (score >= 70) {
+    if (score > 60) {
       return {
         text: "Risiko Tinggi",
         textColor: "text-red-500",
@@ -32,7 +26,7 @@ const AssessmentResult = ({ apiData }) => {
         badgeText: "text-red-600",
         badgeBorder: "border-red-100/50",
       };
-    } else if (score >= 40) {
+    } else if (score >= 30) {
       return {
         text: "Risiko Sedang",
         textColor: "text-orange-500",
@@ -56,8 +50,8 @@ const AssessmentResult = ({ apiData }) => {
   const risk = getRiskDetails(prediction);
 
   const getCategoryColor = (score) => {
-    if (score >= 70) return "bg-red-500";
-    if (score >= 40) return "bg-amber-500";
+    if (score > 60) return "bg-red-500";
+    if (score >= 30) return "bg-amber-500";
     return "bg-brand-primary";
   };
 
@@ -89,23 +83,6 @@ const AssessmentResult = ({ apiData }) => {
 
     return () => clearTimeout(timer);
   }, [targetPrediction, circumference]);
-
-  const handleGeneratePlan = async () => {
-    setIsGenerating(true);
-
-    toast.promise(assessmentService.generatePlan(), {
-      loading: "Memproses & merancang program sehat 7 hari Anda...",
-      success: () => {
-        setIsGenerating(false);
-        navigate("/dashboard");
-        return "Program Sehat 7 Hari Berhasil Diaktifkan! 🎉";
-      },
-      error: (err) => {
-        setIsGenerating(false);
-        return err.response?.data?.message || "Gagal mengaktifkan program sehat.";
-      },
-    });
-  };
 
   return (
     <AssessmentCard>
@@ -166,7 +143,7 @@ const AssessmentResult = ({ apiData }) => {
 
         <div className="mt-8">
           <button
-            onClick={handleGeneratePlan}
+            onClick={onGeneratePlan}
             disabled={isGenerating}
             className="w-full bg-brand-primary text-white font-bold h-12 rounded-xl cursor-pointer hover:bg-brand-secondary transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-md"
           >
